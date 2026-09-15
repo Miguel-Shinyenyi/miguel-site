@@ -1,0 +1,32 @@
+---
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="/" class="site-title">Miguel</a>
+      <nav>
+        <a href="/philosophy">Philosophy</a>
+        <a href="/tech">Tech</a>
+        <a href="/journal">Journal</a>
+        <a href="/projects">Projects</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>Observe, name, investigate, record, learn, govern.</p>
+    </footer>
+  </body>
+</html>
