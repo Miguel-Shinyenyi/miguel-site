@@ -1,0 +1,32 @@
+---
+import EntryMeta from './EntryMeta.astro';
+import { withBase } from '../lib/url';
+
+interface Entry {
+  slug: string;
+  data: {
+    title: string;
+    date: Date;
+    summary: string;
+    draft: boolean;
+    updated?: Date;
+  };
+}
+
+interface Props {
+  entries: Entry[];
+  section: string;
+}
+const { entries, section } = Astro.props;
+---
+<ul class="entry-list">
+  {entries.map((entry) => (
+    <li>
+      <EntryMeta date={entry.data.date} draft={entry.data.draft} updated={entry.data.updated} />
+      <div class="entry-body">
+        <a href={withBase(`/${section}/${entry.slug}`)}>{entry.data.title}</a>
+        <p class="entry-summary">{entry.data.summary}</p>
+      </div>
+    </li>
+  ))}
+</ul>

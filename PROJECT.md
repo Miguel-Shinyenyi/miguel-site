@@ -1,0 +1,108 @@
+# Personal Site
+
+## What this is
+
+A personal site built to actually show, not just claim, how philosophy, technology, and
+self-observation connect. Four sections: philosophy, tech, journal, projects.
+
+## Why it exists
+
+Part of the broader hub-and-spoke system (UMWAYI). The journal and articles written there
+feed this site, and this site is where that thinking becomes public and readable, not just
+kept for personal reference.
+
+## Tech stack
+
+- Astro, static site generator, content-collection driven
+- Markdown as the content format, one file per entry
+- No backend, no database, deploys as static files
+
+## Project structure
+
+```
+---
+site/
+  PROJECT.md <- this file, master guide
+  docs/
+    design.md <- visual and interaction design brief
+    publishing.md            <- GitHub Pages deployment
+  .github/workflows/
+    deploy.yml <- builds and deploys to GitHub Pages on push to main
+  src/
+    content/
+      config.ts <- collection schema
+      philosophy/ <- one .md file per entry
+      tech/
+      journal/
+      projects/
+    components/
+      EntryList.astro <- listing-page entry rows
+      EntryMeta.astro <- date/status/updated margin metadata
+    lib/
+      url.ts <- base-path-aware link helper
+      openThreads.ts <- build-time fetch of UMWAYI's open questions
+    layouts/
+      BaseLayout.astro
+    pages/
+      index.astro
+      [section]/index.astro, [section]/[slug].astro for each of the four sections
+    styles/
+      global.css
+---
+```
+
+## Running the application
+
+```
+npm install
+npm run dev
+```
+
+Visit the local URL it prints. Editing anything under `src/content/` hot-reloads.
+
+## Adding an entry
+
+Drop a new `.md` file in the right folder under `src/content/`, with this frontmatter:
+
+```
+---
+title: "Your title"
+date: 2026-09-16
+summary: "One or two sentences for the listing page."
+draft: false
+---
+```
+
+Set `draft: true` to keep something out of the build without deleting it.
+
+## Build phases
+
+1. Structural scaffold: four theme sections, content collections, basic layout. Done, but
+   built with a placeholder visual design, not a real one.
+2. Real design implementation: apply `docs/design.md` in full. Typography, color, layout,
+   motion, and the homepage's live open-questions feature. Done.
+3. Deployment: push to a static host, connect a real domain. GitHub Actions workflow and
+   `astro.config.mjs` are in place per `docs/publishing.md`; one manual step remains (see
+   that doc's "Remaining manual step").
+
+Current phase: **Phase 3, deployment, one manual step short of live.**
+
+## Status log
+
+| Date | Phase | Status | Notes |
+|------|-------|--------|-------|
+| 2026-09-16 | Phase 1 | Done | Astro scaffold built and verified, four sections, one sample entry each, placeholder visual design |
+| 2026-09-18 | Phase 2 | Started | Real design direction decided, see docs/design.md, replacing the placeholder |
+| 2026-09-18 | Phase 2 | Done | Design implemented in full: typography, color (light/dark), margin metadata layout, cursor-blink and hover-annotation motion, homepage open-questions feature pulling live from UMWAYI. Also fixed a latent bug where the stylesheet never actually shipped in a production build. See docs/design.md decisions log. |
+| 2026-09-18 | Phase 3 | Started | `astro.config.mjs` site/base and `.github/workflows/deploy.yml` added per docs/publishing.md. Repo pushed to GitHub. Still needs: GitHub Pages source set to "GitHub Actions" in repo settings (manual, not done by an agent), then a push to main to trigger the first deploy. |
+
+## Rules for working on this project
+
+- No backend, no database. If a feature seems to need one, it belongs in a different
+  project, not here.
+- Every design decision in `docs/design.md`'s decisions log gets a stated reason. No
+  aesthetic choice without one.
+- Deploying is `npm run build`, output goes to `dist/`, static hosting only.
+- If something in `docs/design.md` turns out to be impractical in Astro, flag it back rather
+  than quietly substituting something else. The design was chosen deliberately, not
+  arbitrarily.

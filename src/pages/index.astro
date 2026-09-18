@@ -1,16 +1,36 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+import { getOpenThreads } from '../lib/openThreads';
+
+const threads = await getOpenThreads();
+const asOf = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
 <BaseLayout title="Miguel">
-  <h1>Understanding, in public</h1>
+  <h1 class="headline">Understanding, in public<span class="cursor" aria-hidden="true">|</span></h1>
   <p>
     Philosophy, technology, and the daily work of paying attention to how I actually think and
     work. Four threads, one underlying method: observe, name, investigate, record, learn, govern.
   </p>
-  <ul class="entry-list">
-    <li><a href="/philosophy">Philosophy →</a><p class="entry-summary">Understanding software and people through first principles.</p></li>
-    <li><a href="/tech">Tech →</a><p class="entry-summary">Plain explanations of concepts, tested against my own gaps.</p></li>
-    <li><a href="/journal">Journal →</a><p class="entry-summary">Curated excerpts from the daily practice.</p></li>
-    <li><a href="/projects">Projects →</a><p class="entry-summary">What's actually being built, and why.</p></li>
+  <ul class="section-list">
+    <li><a href={withBase('/philosophy')}>Philosophy →</a><p class="entry-summary">Understanding software and people through first principles.</p></li>
+    <li><a href={withBase('/tech')}>Tech →</a><p class="entry-summary">Plain explanations of concepts, tested against my own gaps.</p></li>
+    <li><a href={withBase('/journal')}>Journal →</a><p class="entry-summary">Curated excerpts from the daily practice.</p></li>
+    <li><a href={withBase('/projects')}>Projects →</a><p class="entry-summary">What's actually being built, and why.</p></li>
   </ul>
+
+  {threads.length > 0 && (
+    <section class="open-threads">
+      <h2 class="section-label">Open threads</h2>
+      <ul class="thread-list">
+        {threads.map((thread) => (
+          <li>
+            <span class="thread-source">{thread.project}</span>
+            <span class="thread-text">{thread.text}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="thread-note">Pulled from the UMWAYI hub at build time, as of {asOf}.</p>
+    </section>
+  )}
 </BaseLayout>

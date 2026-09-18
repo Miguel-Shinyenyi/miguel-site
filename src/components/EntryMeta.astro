@@ -1,0 +1,17 @@
+---
+interface Props {
+  date: Date;
+  draft?: boolean;
+  updated?: Date;
+}
+const { date, draft = false, updated } = Astro.props;
+
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+<div class="entry-meta">
+  <span class="entry-date">{fmt(date)}</span>
+  <span class="entry-annotation">
+    <span class:list={['entry-status', { 'entry-status--draft': draft }]}>{draft ? 'draft' : 'published'}</span>
+    {updated && <span class="entry-updated">updated {fmt(updated)}</span>}
+  </span>
+</div>

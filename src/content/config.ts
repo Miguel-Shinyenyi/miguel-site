@@ -5,6 +5,7 @@ const baseSchema = z.object({
   date: z.date(),
   summary: z.string(),
   draft: z.boolean().default(false),
+  updated: z.date().optional(),
 });
 
 export const collections = {
