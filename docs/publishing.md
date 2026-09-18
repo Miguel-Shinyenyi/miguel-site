@@ -46,16 +46,9 @@ jobs:
 
 | Date | Decision | Reason |
 |------|----------|--------|
-| 2026-09-19 | GitHub Pages only, Carrd and Hashnode dropped from scope | One working publishing pipeline is worth more right now than three partially documented ones. Revisit either if the need becomes concrete. |
+| 2026-09-18 | GitHub Pages only, Carrd and Hashnode dropped from scope | One working publishing pipeline is worth more right now than three partially documented ones. Revisit either if the need becomes concrete. |
 | 2026-09-18 | `site: https://Miguel-Shinyenyi.github.io/miguel-site`, `base: /miguel-site` set in `astro.config.mjs`; the workflow file added at `.github/workflows/deploy.yml` exactly as specified above | Repo is named `miguel-site`, not `<username>.github.io`, so `base` is required per this doc's own step 3, or every internal link 404s on GitHub Pages |
 
 ## Open questions
 
 None currently. Reopen if Carrd or Hashnode become relevant again.
-
-## Remaining manual step
-
-GitHub Pages source still needs to be set to "GitHub Actions" in the repo's Settings → Pages
-(step 1 above). This wasn't done as part of this change since it's a GitHub account/repo
-settings change, not a code change, gh CLI in this environment isn't authenticated, and repo
-settings changes should go through the user rather than be made silently on their behalf.
