@@ -13,7 +13,16 @@ Giscus is live. Discussions is enabled, the giscus app is installed, and
 `src/components/Giscus.astro` has real `GISCUS_REPO_ID`/`GISCUS_CATEGORY_ID` values from
 giscus.app. Comments render on every non-draft article.
 
-Cusdis is planned, not built. See below.
+Cusdis is built, not yet activated. `src/components/Cusdis.astro` and the wiring into all
+four article templates (right after Giscus, same non-draft gating) are in place, but
+`CUSDIS_APP_ID` is blank, so the component renders nothing. One account-level step remains,
+same category as the Giscus setup, not something an agent should do on your behalf:
+
+1. Create a free account at cusdis.com and add this site as a website project, using the
+   live GitHub Pages URL (`https://miguel-shinyenyi.github.io/miguel-site`).
+2. Copy the generated App ID from the Cusdis dashboard.
+3. Paste it into `CUSDIS_APP_ID` at the top of `src/components/Cusdis.astro`. The widget
+   activates immediately, no other code changes.
 
 ## How Giscus works
 
@@ -32,13 +41,14 @@ doesn't have one. Cusdis is a lightweight, privacy-oriented comment widget that 
 anonymous, name-only guest comments, no account needed on either side, meant to run alongside
 Giscus, not replace it.
 
-**How it would work**, once built:
+**How it works:**
 
 1. A free Cusdis account (cusdis.com) gives a hosted instance, so this still doesn't need a
    backend added to this project, the same constraint Giscus respects. Self-hosting is
    possible later if the hosted free tier ever becomes a real limitation, not needed to start.
-2. Each article gets a Cusdis widget alongside the Giscus one, likely under a second heading,
-   "Guest comments," so it's clear the two are separate threads, not one merged conversation.
+2. Each article gets a Cusdis widget right after the Giscus one, under its own "Guest
+   comments" heading, so it's clear the two are separate threads, not one merged conversation.
+   The page's URL path is used as Cusdis's page ID, mirroring Giscus's `pathname` mapping.
 3. New guest comments show up in the Cusdis dashboard for moderation and reply, not on
    GitHub, since Cusdis has no GitHub integration, that's the actual tradeoff for allowing
    guests in the first place.
@@ -48,7 +58,8 @@ Giscus, not replace it.
 | Date | Decision | Reason |
 |------|----------|--------|
 | 2026-09-20 | Cusdis planned as a second, separate widget, not a Giscus replacement | Giscus's GitHub-account requirement is a real access barrier worth removing for some visitors, but Giscus's GitHub-native reply workflow is worth keeping for everyone else; running both preserves each one's strength instead of trading one off for the other |
-| 2026-09-20 | Cusdis is documented now, not built now | This is a scoped future addition, not an active phase; recorded so the decision and its reasoning exist before the work does, rather than being reconstructed later |
+| 2026-09-20 | Cusdis widget uses the page's URL pathname as its page ID | Mirrors Giscus's `data-mapping="pathname"` decision above, so both comment systems key off the same stable identifier instead of two different schemes |
+| 2026-09-20 | "Guest comments" as its own heading, directly under Giscus's "Comments" | Resolves the open question below: keeps the two threads visually distinct without a full section divider between them, since they're both "comments," just on separate backends |
 | 2026-09-20 | Giscus over a custom comments backend | Matches the existing no-backend, no-database rule for this project; GitHub already provides identity, moderation, and storage, building a parallel system would duplicate what GitHub does for free |
 | 2026-09-20 | Comments land on the main site repo's Discussions, not a separate repo | Keeps feedback next to the content it's about; a separate repo would need its own permissions and add a coordination cost with no clear benefit |
 | 2026-09-20 | `data-mapping="pathname"` | Ties a discussion to the article's URL rather than its title, so a later title edit doesn't orphan existing comments |
@@ -62,5 +73,3 @@ Giscus, not replace it.
 - Whether Cusdis's hosted free tier stays sufficient once real guest traffic exists, or
   whether self-hosting becomes worth the added complexity. Decide once there's actual usage
   to look at, not before.
-- Whether "guest comments" visually needs its own heading distinct from Giscus's "Comments,"
-  or whether that reads as cluttered once both are actually on the page. Decide during build.

@@ -1,0 +1,28 @@
+---
+// APP_ID comes from creating a free website project at cusdis.com (see docs/feedback.md).
+// Left blank until then; the widget renders nothing rather than a broken embed.
+const CUSDIS_APP_ID = '';
+
+interface Props {
+  pageId: string;
+  pageUrl: string;
+  pageTitle: string;
+}
+const { pageId, pageUrl, pageTitle } = Astro.props;
+
+const configured = Boolean(CUSDIS_APP_ID);
+---
+{configured && (
+  <section class="guest-comments" aria-label="Guest comments">
+    <h2 class="section-label">Guest comments</h2>
+    <div
+      id="cusdis_thread"
+      data-host="https://cusdis.com"
+      data-app-id={CUSDIS_APP_ID}
+      data-page-id={pageId}
+      data-page-url={pageUrl}
+      data-page-title={pageTitle}
+    ></div>
+    <script async src="https://cusdis.com/js/cusdis.es.js"></script>
+  </section>
+)}

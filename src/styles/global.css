@@ -318,3 +318,9 @@ h1 {
   padding-top: 2rem;
   border-top: 1px solid var(--border);
 }
+
+/* ---- guest comments (cusdis), sits right after giscus, no second divider ---- */
+
+.guest-comments {
+  margin-top: 2.5rem;
+}
