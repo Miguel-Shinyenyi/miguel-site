@@ -91,9 +91,9 @@ Set `draft: true` to keep something out of the build without deleting it.
    `docs/feedback.md`. Done, live on every non-draft article.
 5. Guest comments: originally scoped as Cusdis, built, then removed after Cusdis's
    deprecation was confirmed. Replaced with Waline, hosted on Vercel plus a free-tier
-   database. Built, inactive pending the Vercel deploy.
+   database. Done, live on every non-draft article.
 
-Current phase: **Phase 5, code complete, one manual step (Vercel deploy) short of live.**
+Current phase: **none, all five phases done.**
 
 ## Status log
 
@@ -112,6 +112,7 @@ Current phase: **Phase 5, code complete, one manual step (Vercel deploy) short o
 | 2026-09-20 | Phase 5 | Reverted | Cusdis confirmed deprecated (repo archived, hosted backend down since July 2026) before the account-setup step was ever done. `src/components/Cusdis.astro` and its wiring need removing. See docs/feedback.md's "Removed: Cusdis" section. |
 | 2026-09-20 | Phase 5 | Rescoped | Waline chosen in Cusdis's place, hosted on Vercel serverless plus a free-tier database, an acknowledged real exception to the no-backend rule, unlike Giscus. See docs/feedback.md. Not yet built. |
 | 2026-09-20 | Phase 5 | Built | Re-verified the Cusdis deprecation claim independently (GitHub repo archived, cusdis.com origin returning HTTP 521) before deleting `src/components/Cusdis.astro` and its four template wirings. Added `src/components/Waline.astro` in the same position, keyed by `window.location.pathname`, reactions off, theme following the OS, matching Giscus's existing choices. Renders nothing until `WALINE_SERVER_URL` is filled in, since the Waline server hasn't been deployed to Vercel yet (real infrastructure step, not done by an agent). See docs/feedback.md's "Current state" for the exact remaining steps. |
+| 2026-09-20 | Phase 5 | Done | Waline deployed to Vercel. First URL offered was rejected after checking it (redirected through Vercel's SSO login, a protected preview deployment); the working production URL, `waline-comments-azure-zeta.vercel.app`, was confirmed publicly reachable and running real Waline (`x-waline-version` header) before being wired into `WALINE_SERVER_URL`. Verified live in a real browser: both Giscus and Waline render and initialize correctly on an article page. |
 
 ## Rules for working on this project
 

@@ -13,16 +13,12 @@ Giscus is live. Discussions is enabled, the giscus app is installed, and
 `src/components/Giscus.astro` has real `GISCUS_REPO_ID`/`GISCUS_CATEGORY_ID` values from
 giscus.app. Comments render on every non-draft article.
 
-Waline is built, not yet activated. `src/components/Waline.astro` and the wiring into all
-four article templates (in Cusdis's old place, right after Giscus) are in place, but
-`WALINE_SERVER_URL` is blank, so the component renders nothing. One real step remains, and
-it's a genuine infrastructure step, not a settings toggle, so it goes through the site owner:
-
-1. Deploy Waline's server to Vercel (Waline publishes an official one-click Vercel deploy
-   template that also provisions the database as part of setup).
-2. Once deployed, copy the resulting server's URL (e.g. `https://your-app.vercel.app`).
-3. Paste it into `WALINE_SERVER_URL` at the top of `src/components/Waline.astro`. The widget
-   activates immediately, no other code changes.
+Waline is live. Deployed to Vercel at `waline-comments-azure-zeta.vercel.app`, confirmed
+publicly reachable (not behind Vercel's deployment-protection SSO, unlike a first deploy
+attempt at a preview URL that was) and confirmed as a genuine Waline instance via its
+`x-waline-version` response header before wiring it in. `WALINE_SERVER_URL` in
+`src/components/Waline.astro` points at it, and the widget renders on every non-draft
+article, right after Giscus.
 
 ## Removed: Cusdis
 
@@ -90,6 +86,8 @@ problem, not preemptively.
 | 2026-09-20 | Comments render only on non-draft entries (`!entry.data.draft`) | A draft is explicitly unfinished and not meant to be public; there's nothing to discuss on a page that isn't really published yet |
 | 2026-09-20 | Reused the default `Announcements` category (type Announcement) rather than creating a separate `Comments` one | Already the right format per giscus's guidance; a same-purpose second category would just be a naming preference, not a functional difference |
 | 2026-09-20 | Waline widget keyed by `window.location.pathname` at render time, `reaction: false`, `dark: 'auto'` | Mirrors the same three decisions already made for Giscus (pathname mapping, no reactions, OS-driven theme), so both comment systems behave consistently instead of each having its own rules |
+| 2026-09-20 | Rejected the first deployment URL offered, `waline-comments-ipuu3lrfw-*.vercel.app` | It redirected through `vercel.com/sso-api` to a login page, meaning anonymous visitors would be bounced instead of reaching Waline's API, a preview-deployment protection issue rather than a working server. Caught by checking the URL before wiring it in, not after |
+| 2026-09-20 | Confirmed `waline-comments-azure-zeta.vercel.app` as a working public endpoint before activating it | Returns 200 with `access-control-allow-origin: *` and an `x-waline-version` header, not just "the URL the user pasted" |
 
 ## Open questions
 
