@@ -8,22 +8,9 @@ onto the site automatically.
 
 ## Current state
 
-Built, not yet activated. `src/components/Giscus.astro` and the wiring into all four
-article templates (`src/pages/{philosophy,tech,journal,projects}/[slug].astro`) are in
-place, but `GISCUS_REPO_ID` and `GISCUS_CATEGORY_ID` are blank, so the component renders
-nothing. Two account-level steps remain, and they have to happen through the GitHub UI as
-the repo owner, not through an agent:
-
-1. Enable Discussions on the site's GitHub repo (Settings → General → Features →
-   Discussions).
-2. Create a Discussions category named `Comments`, type "Announcement" (giscus's own
-   recommendation, so visitors comment through the widget rather than opening arbitrary
-   Discussions directly on GitHub).
-3. Install the giscus app at github.com/apps/giscus on this repo.
-4. Go to giscus.app, enter `Miguel-Shinyenyi/miguel-site`, pick the `Comments` category, and
-   copy the generated `data-repo-id` and `data-category-id` values.
-5. Paste those two values into `GISCUS_REPO_ID` and `GISCUS_CATEGORY_ID` at the top of
-   `src/components/Giscus.astro`. The widget activates immediately, no other code changes.
+Live. Discussions is enabled, the giscus app is installed, and
+`src/components/Giscus.astro` has real `GISCUS_REPO_ID`/`GISCUS_CATEGORY_ID` values from
+giscus.app. Comments render on every non-draft article.
 
 ## How it works
 
@@ -45,7 +32,7 @@ No server, no database, matching this project's existing no-backend rule.
 | 2026-09-20 | `data-reactions-enabled="0"` | Emoji reaction counters read as a gamified, polished-product feature, which is exactly what the design brief (docs/design.md) says this site should avoid |
 | 2026-09-20 | `data-theme="preferred_color_scheme"` | Matches the site's own `prefers-color-scheme` based light/dark handling instead of hardcoding one theme |
 | 2026-09-20 | Comments render only on non-draft entries (`!entry.data.draft`) | A draft is explicitly unfinished and not meant to be public; there's nothing to discuss on a page that isn't really published yet |
-| 2026-09-20 | Dedicated `Comments` category, type Announcement | Per giscus's own guidance: keeps visitor-created Discussions scoped to actual page comments instead of mixing with any other Discussions use later |
+| 2026-09-20 | Reused the default `Announcements` category (type Announcement) rather than creating a separate `Comments` one | Already the right format per giscus's guidance; a same-purpose second category would just be a naming preference, not a functional difference |
 
 ## Open questions
 

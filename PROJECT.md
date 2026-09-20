@@ -85,9 +85,9 @@ Set `draft: true` to keep something out of the build without deleting it.
    motion, and the homepage's live open-questions feature. Done.
 3. Deployment: push to a static host, connect a real domain. Done, live on GitHub Pages.
 4. Feedback feature: Giscus comments on articles, backed by GitHub Discussions, per
-   `docs/feedback.md`. Built, inactive pending a one-time GitHub setup step.
+   `docs/feedback.md`. Done, live on every non-draft article.
 
-Current phase: **Phase 4, code complete, one manual step short of live.**
+Current phase: **none, all four phases done.**
 
 ## Status log
 
@@ -100,6 +100,7 @@ Current phase: **Phase 4, code complete, one manual step short of live.**
 | 2026-09-18 | Phase 3 | Done | Manual GitHub Pages setup completed and confirmed live at the GitHub Pages URL. |
 | 2026-09-20 | Phase 4 | Scoped | Feedback feature designed: Giscus, backed by GitHub Discussions on this repo, no backend added. See docs/feedback.md. Not yet built. |
 | 2026-09-20 | Phase 4 | Built | `src/components/Giscus.astro` added and wired into all four article templates, gated on non-draft entries. Renders nothing until `GISCUS_REPO_ID`/`GISCUS_CATEGORY_ID` are filled in, since Discussions and the giscus app aren't installed on the repo yet (account-level step, not done by an agent). See docs/feedback.md's "Current state" for the exact remaining steps. |
+| 2026-09-20 | Phase 4 | Done | Discussions enabled, giscus app installed, real `GISCUS_REPO_ID`/`GISCUS_CATEGORY_ID` from giscus.app filled in against the existing `Announcements` category. Comments are live on every non-draft article. |
 
 ## Rules for working on this project
 
