@@ -27,7 +27,7 @@ site/
   docs/
     design.md <- visual and interaction design brief
     publishing.md <- GitHub Pages deployment
-    feedback.md <- Giscus/GitHub Discussions comment feature
+    feedback.md <- Giscus/GitHub/Cusdis Discussions comment feature
     .github/workflows/
     deploy.yml <- builds and deploys to GitHub Pages on push to main
   src/
@@ -86,8 +86,10 @@ Set `draft: true` to keep something out of the build without deleting it.
 3. Deployment: push to a static host, connect a real domain. Done, live on GitHub Pages.
 4. Feedback feature: Giscus comments on articles, backed by GitHub Discussions, per
    `docs/feedback.md`. Done, live on every non-draft article.
+5. Guest comments: Cusdis, running alongside Giscus for visitors without a GitHub account.
+   Scoped in `docs/feedback.md`. Not started.
 
-Current phase: **none, all four phases done.**
+Current phase: **five**
 
 ## Status log
 
