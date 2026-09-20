@@ -16,6 +16,7 @@ kept for personal reference.
 - Astro, static site generator, content-collection driven
 - Markdown as the content format, one file per entry
 - No backend, no database, deploys as static files
+- Giscus for comments, backed by GitHub Discussions, no server or database added for it
 
 ## Project structure
 
@@ -25,8 +26,9 @@ site/
   PROJECT.md <- this file, master guide
   docs/
     design.md <- visual and interaction design brief
-    publishing.md            <- GitHub Pages deployment
-  .github/workflows/
+    publishing.md <- GitHub Pages deployment
+    feedback.md <- Giscus/GitHub Discussions comment feature
+    .github/workflows/
     deploy.yml <- builds and deploys to GitHub Pages on push to main
   src/
     content/
@@ -81,11 +83,11 @@ Set `draft: true` to keep something out of the build without deleting it.
    built with a placeholder visual design, not a real one.
 2. Real design implementation: apply `docs/design.md` in full. Typography, color, layout,
    motion, and the homepage's live open-questions feature. Done.
-3. Deployment: push to a static host, connect a real domain. GitHub Actions workflow and
-   `astro.config.mjs` are in place per `docs/publishing.md`; one manual step remains (see
-   that doc's "Remaining manual step").
+3. Deployment: push to a static host, connect a real domain. Done, live on GitHub Pages.
+4. Feedback feature: Giscus comments on articles, backed by GitHub Discussions, per
+   `docs/feedback.md`. Not started.
 
-Current phase: **Phase 3, deployment, one manual step short of live.**
+Current phase: **entering Phase 4.**
 
 ## Status log
 
@@ -95,6 +97,8 @@ Current phase: **Phase 3, deployment, one manual step short of live.**
 | 2026-09-18 | Phase 2 | Started | Real design direction decided, see docs/design.md, replacing the placeholder |
 | 2026-09-18 | Phase 2 | Done | Design implemented in full: typography, color (light/dark), margin metadata layout, cursor-blink and hover-annotation motion, homepage open-questions feature pulling live from UMWAYI. Also fixed a latent bug where the stylesheet never actually shipped in a production build. See docs/design.md decisions log. |
 | 2026-09-18 | Phase 3 | Started | `astro.config.mjs` site/base and `.github/workflows/deploy.yml` added per docs/publishing.md. Repo pushed to GitHub. Still needs: GitHub Pages source set to "GitHub Actions" in repo settings (manual, not done by an agent), then a push to main to trigger the first deploy. |
+| 2026-09-18 | Phase 3 | Done | Manual GitHub Pages setup completed and confirmed live at the GitHub Pages URL. |
+| 2026-09-20 | Phase 4 | Scoped | Feedback feature designed: Giscus, backed by GitHub Discussions on this repo, no backend added. See docs/feedback.md. Not yet built. |
 
 ## Rules for working on this project
 
