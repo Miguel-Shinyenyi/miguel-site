@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import EntryMeta from '../../components/EntryMeta.astro';
 import Giscus from '../../components/Giscus.astro';
-import Cusdis from '../../components/Cusdis.astro';
+import Waline from '../../components/Waline.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -23,9 +23,7 @@ const { Content } = await entry.render();
       <h1>{entry.data.title}</h1>
       <Content />
       {!entry.data.draft && <Giscus />}
-      {!entry.data.draft && (
-        <Cusdis pageId={Astro.url.pathname} pageUrl={Astro.url.href} pageTitle={entry.data.title} />
-      )}
+      {!entry.data.draft && <Waline />}
     </div>
   </div>
 </BaseLayout>

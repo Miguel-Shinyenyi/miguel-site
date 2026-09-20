@@ -1,0 +1,25 @@
+---
+// serverURL comes from deploying Waline's server to Vercel plus a database
+// (see docs/feedback.md). Left blank until then; the widget renders nothing
+// rather than a broken embed pointed at a server that doesn't exist.
+const WALINE_SERVER_URL = '';
+
+const configured = Boolean(WALINE_SERVER_URL);
+---
+{configured && (
+  <section class="guest-comments" aria-label="Guest comments">
+    <h2 class="section-label">Guest comments</h2>
+    <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
+    <div id="waline"></div>
+    <script type="module" define:vars={{ serverURL: WALINE_SERVER_URL }}>
+      import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+      init({
+        el: '#waline',
+        serverURL,
+        path: window.location.pathname,
+        dark: 'auto',
+        reaction: false,
+      });
+    </script>
+  </section>
+)}

@@ -319,7 +319,7 @@ h1 {
   border-top: 1px solid var(--border);
 }
 
-/* ---- guest comments (cusdis), sits right after giscus, no second divider ---- */
+/* ---- guest comments (waline), sits right after giscus, no second divider ---- */
 
 .guest-comments {
   margin-top: 2.5rem;
