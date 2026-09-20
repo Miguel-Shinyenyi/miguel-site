@@ -1,0 +1,32 @@
+---
+// Repo ID and category ID come from giscus.app, generated once Discussions is
+// enabled and the giscus GitHub App is installed on this repo (see docs/feedback.md).
+// Left blank until then; the widget renders nothing rather than a broken embed.
+const GISCUS_REPO = 'Miguel-Shinyenyi/miguel-site';
+const GISCUS_REPO_ID = '';
+const GISCUS_CATEGORY = 'Comments';
+const GISCUS_CATEGORY_ID = '';
+
+const configured = Boolean(GISCUS_REPO_ID && GISCUS_CATEGORY_ID);
+---
+{configured && (
+  <section class="comments" aria-label="Comments">
+    <h2 class="section-label">Comments</h2>
+    <script
+      src="https://giscus.app/client.js"
+      data-repo={GISCUS_REPO}
+      data-repo-id={GISCUS_REPO_ID}
+      data-category={GISCUS_CATEGORY}
+      data-category-id={GISCUS_CATEGORY_ID}
+      data-mapping="pathname"
+      data-strict="0"
+      data-reactions-enabled="0"
+      data-emit-metadata="0"
+      data-input-position="bottom"
+      data-theme="preferred_color_scheme"
+      data-lang="en"
+      crossorigin="anonymous"
+      async
+    ></script>
+  </section>
+)}

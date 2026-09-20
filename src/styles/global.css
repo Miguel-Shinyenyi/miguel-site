@@ -310,3 +310,11 @@ h1 {
   color: var(--muted);
   margin-top: 1.5rem;
 }
+
+/* ---- comments (giscus) ---- */
+
+.comments {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
