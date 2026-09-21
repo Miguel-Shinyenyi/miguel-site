@@ -4,9 +4,26 @@
   --muted: #6f6656;
   --border: #e5ddcd;
   --accent: #b5541f;
+  --code-bg: #f1ece1;
 
   --font-serif: 'Newsreader', 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+  /* Shiki's css-variables theme (astro.config.mjs), mapped onto this
+     site's own palette instead of a hardcoded GitHub-dark box. Kept
+     near-monochrome on purpose: --accent is reserved for state markers
+     (open question/draft/in progress), not syntax decoration. */
+  --astro-code-color-background: var(--code-bg);
+  --astro-code-color-text: var(--text);
+  --astro-code-token-comment: var(--muted);
+  --astro-code-token-string: var(--muted);
+  --astro-code-token-string-expression: var(--muted);
+  --astro-code-token-punctuation: var(--muted);
+  --astro-code-token-keyword: var(--text);
+  --astro-code-token-function: var(--text);
+  --astro-code-token-constant: var(--text);
+  --astro-code-token-parameter: var(--text);
+  --astro-code-token-link: var(--text);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,6 +33,7 @@
     --muted: #a3967f;
     --border: #332c22;
     --accent: #d9834a;
+    --code-bg: #1f1a13;
   }
 }
 
@@ -93,6 +111,16 @@ main {
 main p,
 main li {
   max-width: 68ch;
+}
+
+pre.astro-code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  overflow-x: auto;
 }
 
 h1 {
