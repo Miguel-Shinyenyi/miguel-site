@@ -1,7 +1,7 @@
 ---
 title: "Idempotency keys, under load"
 date: 2026-09-21
-summary: "What an idempotency key actually guarantees in a real settlement system, the two concurrency races that show up under load, and a gap that studying it surfaced."
+summary: "What an idempotency key actually guarantees in a real settlement system, the two concurrency races that show up under load, and a gap that studying it surfaced, then closed."
 draft: false
 ---
 
@@ -105,15 +105,23 @@ don't know, let reconciliation resolve it later" state used when the external ca
 fails outright. Both concurrency behaviors were found by actually running load and chaos
 tests against the system, not by design review.
 
-**One thing worth being honest about here, since this piece is meant to show real thinking,
-not a finished one.** Studying this closely enough to write the above surfaced a genuine gap,
-not in the two races described, in a third failure mode neither of them covers: what happens
-if the process hard-crashes between the two transactions entirely, after the settlement is
-written as `PENDING` but before it's ever finalized. No thread survives to catch anything in
-that case, and the settlement has no external reference yet, since that's only set during
-finalization, which makes it invisible to reconciliation's own query. The idempotency key
-would stay `IN_PROGRESS` indefinitely. That's a real, verified gap, confirmed against the
-actual repository, not assumed. It isn't fixed yet. It's queued.
+**A third failure mode, found by studying the first two closely enough to explain them.**
+Neither race above covers what happens if the process hard-crashes between the two
+transactions entirely, after the settlement is written as `PENDING` but before it's ever
+finalized. No thread survives to catch anything in that case, and the settlement has no
+external reference yet, since that's only set during finalization, which made it invisible
+to reconciliation's own query. The idempotency key would stay `IN_PROGRESS` indefinitely,
+409-ing every retry, forever. That was a real, verified gap, confirmed against the actual
+repository before writing it down here, not assumed.
+
+It's fixed now. A scheduled sweep, `StalePendingSettlementSweepService`, runs the same way
+reconciliation already does: it finds settlements stuck `PENDING` with no external reference
+past a grace period (300 seconds by default), and finalizes each one as `UNKNOWN`, reusing
+the exact same "we don't know, reconciliation resolves it later" path the two races above
+already fall back to. No new state-machine logic, just the same escape hatch applied to a
+case that previously had no path to it at all. Covered by its own unit and integration
+tests, the way everything else in this system is.
 
 The interesting part was never the key itself. It's every place where "the same request
-happening twice" turns out to have more than one way of actually happening.
+happening twice" turns out to have more than one way of actually happening, and every place
+"finished" turns out to have more than one way of actually finishing.
