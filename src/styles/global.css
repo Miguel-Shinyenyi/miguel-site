@@ -75,7 +75,8 @@ a {
 
 .site-nav {
   display: flex;
-  gap: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
 }
 
 .site-nav a {
@@ -86,10 +87,22 @@ a {
   text-transform: uppercase;
 }
 
-.site-nav a:hover {
-  color: var(--text);
-  text-decoration: underline;
+@media (max-width: 400px) {
+  .site-nav {
+    gap: 0.5rem 0.85rem;
+  }
+  .site-nav a {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
 }
+
+/* Hover/active accent color on nav is Tailwind/daisyUI utility classes on
+   the element itself (text-primary etc., BaseLayout.astro), not hand CSS:
+   the bolder, more confident accent role on this structural chrome (not
+   the "state marker only" restraint essay body text still keeps) is the
+   whole reason daisyUI's theme is in the stack. See docs/design.md, Color
+   section, revised 2026-09-22, and decisions log. */
 
 .site-footer {
   text-align: center;
@@ -121,6 +134,36 @@ pre.astro-code {
   border: 1px solid var(--border);
   border-radius: 0;
   overflow-x: auto;
+}
+
+/* ---- code blocks: typing reveal on scroll into view ----
+   Lines are clipped (not hidden/removed) by code-reveal.js, so the full
+   text stays in the DOM, selectable, and accessible from first paint; this
+   is a visual reveal, not a content-loading delay. A stepped transition
+   timing gives a chunky, typed feel rather than a smooth wipe. */
+
+pre.astro-code .line {
+  transition: clip-path 0.5s steps(10, end);
+}
+
+.code-cursor {
+  margin-left: 0.15em;
+  /* Bold accent role, per docs/design.md's Color section: the interactive
+     code-typing cursor gets the confident accent, unlike the headline
+     cursor above, which stays unchanged (Motion section). */
+  color: var(--accent);
+}
+
+.code-cursor--done {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  pre.astro-code .line {
+    transition: none;
+  }
 }
 
 h1 {
@@ -173,7 +216,7 @@ h1 {
 
 @media (max-width: 700px) {
   .article-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .article-grid .entry-meta {
     grid-column: 1;
@@ -338,6 +381,35 @@ h1 {
   color: var(--muted);
   margin-top: 1.5rem;
 }
+
+/* ---- the flock: six small marks for the UMWAYI method's six stages
+   (observe, name, investigate, record, learn, govern), read as separate
+   small things gathered toward one point, not a status-glyph row. Quiet
+   and structural, one sparing appearance (open threads), not repeated
+   across every page. See docs/design.md, Personal mark. ---- */
+
+.flock {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.22em;
+  margin-left: 0.65em;
+  vertical-align: middle;
+}
+
+.flock span {
+  display: inline-block;
+  width: 0.3em;
+  height: 0.3em;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.flock span:nth-child(1) { transform: translateY(-0.4em); opacity: 0.4; }
+.flock span:nth-child(2) { transform: translateY(-0.24em); opacity: 0.52; }
+.flock span:nth-child(3) { transform: translateY(-0.12em); opacity: 0.64; }
+.flock span:nth-child(4) { transform: translateY(-0.04em); opacity: 0.76; }
+.flock span:nth-child(5) { transform: translateY(0); opacity: 0.88; }
+.flock span:nth-child(6) { transform: translateY(0.02em); opacity: 1; background: var(--accent); }
 
 /* ---- comments (giscus) ---- */
 

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The site's cursor-blink glyph (the working, watching mind, the
+       shepherd's own position in the UMWAYI metaphor), not an illustrated
+       mark. See docs/design.md, Personal mark. -->
+  <rect width="32" height="32" fill="#17130e"/>
+  <rect x="13" y="7" width="6" height="18" fill="#d9834a"/>
+</svg>

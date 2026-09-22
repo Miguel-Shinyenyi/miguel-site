@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Preflight is off (tailwind.config.mjs), so no reset runs against the
+   existing essay typography in global.css. This stylesheet exists for
+   Tailwind/daisyUI utility and component classes on the new structural
+   chrome only (nav, buttons, the code-block interaction). daisyUI generates
+   the actual `umwayi-light` / `umwayi-dark` theme rules (from
+   tailwind.config.mjs) into the base layer above; which one applies is
+   picked by the `data-theme` attribute BaseLayout sets on <html>, mirroring
+   the same prefers-color-scheme signal global.css's own dark-mode block
+   already uses, not a new manual toggle. */
+
+:root {
+  color-scheme: light dark;
+}

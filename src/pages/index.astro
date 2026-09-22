@@ -21,7 +21,22 @@ const asOf = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'l
 
   {threads.length > 0 && (
     <section class="open-threads">
-      <h2 class="section-label">Open threads</h2>
+      <h2 class="section-label">
+        Open threads
+        <span
+          class="flock"
+          role="img"
+          aria-label="Observe, name, investigate, record, learn, govern"
+          title="Observe, name, investigate, record, learn, govern"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </span>
+      </h2>
       <ul class="thread-list">
         {threads.map((thread) => (
           <li>

@@ -1,4 +1,5 @@
 ---
+import '../styles/tailwind.css';
 import '../styles/global.css';
 import { withBase } from '../lib/url';
 
@@ -8,11 +9,12 @@ interface Props {
 const { title } = Astro.props;
 
 const nav = [
-  { href: '/philosophy', label: 'philosophy' },
-  { href: '/tech', label: 'tech' },
-  { href: '/journal', label: 'journal' },
-  { href: '/projects', label: 'projects' },
+  { href: '/philosophy', label: 'philosophy', title: 'first principles, out loud' },
+  { href: '/tech', label: 'tech', title: 'plain explanations, tested against my own gaps' },
+  { href: '/journal', label: 'journal', title: 'curated excerpts from the daily practice' },
+  { href: '/projects', label: 'projects', title: "what's actually being built, and why" },
 ];
+const currentPath = Astro.url.pathname;
 ---
 <!doctype html>
 <html lang="en">
@@ -20,20 +22,45 @@ const nav = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script is:inline>
+      // Picks the daisyUI theme (umwayi-light / umwayi-dark) that matches
+      // the same prefers-color-scheme signal global.css's own dark-mode
+      // block already reads, before first paint, so there's no flash.
+      document.documentElement.dataset.theme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'umwayi-dark'
+        : 'umwayi-light';
+    </script>
   </head>
   <body>
     <header class="site-header">
       <a href={withBase('/')} class="site-title">miguel</a>
       <nav class="site-nav">
-        {nav.map((item) => (
-          <a href={withBase(item.href)}>/{item.label}</a>
-        ))}
+        {nav.map((item) => {
+          const isActive = currentPath.startsWith(withBase(item.href));
+          return (
+            <a
+              href={withBase(item.href)}
+              title={item.title}
+              aria-current={isActive ? 'page' : undefined}
+              class:list={[
+                'relative transition-colors duration-150 hover:text-primary focus-visible:text-primary',
+                {
+                  'text-primary after:absolute after:inset-x-0 after:-bottom-1.5 after:h-0.5 after:bg-primary after:content-[\'\']':
+                    isActive,
+                },
+              ]}
+            >
+              /{item.label}
+            </a>
+          );
+        })}
       </nav>
     </header>
     <main>
@@ -42,5 +69,6 @@ const nav = [
     <footer class="site-footer">
       <p>observe, name, investigate, record, learn, govern.</p>
     </footer>
+    <script src="../scripts/code-reveal.js"></script>
   </body>
 </html>
