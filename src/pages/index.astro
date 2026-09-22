@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Mascot from '../components/Mascot.astro';
 import { withBase } from '../lib/url';
 import { getOpenThreads } from '../lib/openThreads';
 
@@ -7,11 +8,19 @@ const threads = await getOpenThreads();
 const asOf = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
 <BaseLayout title="Miguel">
-  <h1 class="headline">Understanding, in public<span class="cursor" aria-hidden="true">|</span></h1>
-  <p>
-    Philosophy, technology, and the daily work of paying attention to how I actually think and
-    work. Four threads, one underlying method: observe, name, investigate, record, learn, govern.
-  </p>
+  <section class="hero">
+    <div class="hero-inner">
+      <Mascot />
+      <div class="hero-text">
+        <h1 class="headline">Understanding, in public<span class="cursor" aria-hidden="true">|</span></h1>
+        <p>
+          Philosophy, technology, and the daily work of paying attention to how I actually think
+          and work. Four threads, one underlying method: observe, name, investigate, record,
+          learn, govern.
+        </p>
+      </div>
+    </div>
+  </section>
   <ul class="section-list">
     <li><a href={withBase('/philosophy')}>Philosophy →</a><p class="entry-summary">Understanding software and people through first principles.</p></li>
     <li><a href={withBase('/tech')}>Tech →</a><p class="entry-summary">Plain explanations of concepts, tested against my own gaps.</p></li>
@@ -48,4 +57,5 @@ const asOf = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'l
       <p class="thread-note">Pulled from the UMWAYI hub at build time, as of {asOf}.</p>
     </section>
   )}
+  <script src="../scripts/flock-gather.js"></script>
 </BaseLayout>
