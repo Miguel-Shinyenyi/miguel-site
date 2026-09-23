@@ -6,7 +6,22 @@
    import pulls in Preflight's base reset, which would fight global.css's
    own hand-written base styles. Tailwind 4's documented way to opt out is
    importing the theme and utilities layers individually instead of the
-   combined import. */
+   combined import.
+
+   This order statement must be the first @layer anything in the whole
+   built stylesheet (tailwind.css loads before global.css - see
+   BaseLayout.astro): it's what fixes global.css's element-level base
+   reset (h1-h6/p/figure/dl/dd margins, etc, now wrapped in @layer base
+   there) permanently losing to Tailwind utility classes like mx-auto on
+   the same element, which is what was pinning the article illustration
+   to the left at wide viewports. Layer order ranks utilities above base
+   regardless of source order or specificity once both sides are
+   layered, which is the whole point: unlike global.css's other,
+   deliberately-unlayered component-scoped overrides further down that
+   file (.navbar a, .sticker, etc), which still need to unconditionally
+   beat daisyUI's own layered rules and so stay outside any layer. */
+@layer theme, base, components, utilities;
+
 @import 'tailwindcss/theme' layer(theme);
 @import 'tailwindcss/utilities' layer(utilities);
 

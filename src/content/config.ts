@@ -41,10 +41,17 @@ const nowSchema = z.object({
   updated: z.date(),
 });
 
+// site/links.md: front matter only, the footer/profile link list in
+// display order. Replaces the hardcoded array Footer.astro used to carry.
+const linksCollectionSchema = z.object({
+  links: z.array(linkSchema),
+});
+
 export const collections = {
   philosophy: defineCollection({ type: 'content', schema: articleSchema }),
   tech: defineCollection({ type: 'content', schema: articleSchema }),
   journal: defineCollection({ type: 'content', schema: articleSchema }),
   projects: defineCollection({ type: 'content', schema: projectSchema }),
   now: defineCollection({ type: 'content', schema: nowSchema }),
+  links: defineCollection({ type: 'content', schema: linksCollectionSchema }),
 };

@@ -10,5 +10,6 @@ src/content/tech/*.md
 src/content/journal/*.md
 src/content/projects/*.md
 src/content/now/*.md
+src/content/links/*.md
 public/illustrations/
 public/images/

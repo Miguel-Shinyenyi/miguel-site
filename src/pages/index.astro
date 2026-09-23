@@ -7,7 +7,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Shepherd from '../components/Shepherd.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import { withBase } from '../lib/url';
+import { withBase, resolveLink } from '../lib/url';
 import { getCollection } from 'astro:content';
 import { getOpenThreads } from '../lib/openThreads';
 
@@ -26,6 +26,8 @@ const projectEntries = (await getCollection('projects', ({ data }) => !data.draf
 );
 
 const [nowEntry] = await getCollection('now');
+const [linksEntry] = await getCollection('links');
+const hashnodeUrl = linksEntry.data.links.find((l) => l.label === 'Hashnode')?.url ?? '#';
 
 const threads = await getOpenThreads();
 const asOf = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -276,7 +278,14 @@ const nowRows = nowEntry
         <p class="eyebrow">Writing</p>
         <h2 class="text-[34px] tracking-[-0.02em] md:text-[52px]">Recent articles</h2>
       </div>
-      <a href="#" class="link link-primary py-3 text-base font-bold md:text-[17px]">All articles on Hashnode</a>
+      <a
+        href={resolveLink(hashnodeUrl)}
+        target="_blank"
+        rel="noopener"
+        class="link link-primary py-3 text-base font-bold md:text-[17px]"
+      >
+        All articles on Hashnode
+      </a>
     </div>
 
     <div role="tablist" aria-label="Article topics" class="tabs w-full gap-1.5">

@@ -7,11 +7,11 @@
 // footer), not just the homepage, since a footer that disappears
 // entirely on every article would be a real regression.
 //
-// Social links: the reference's own footer links Hashnode, LinkedIn,
-// dev.to and Medium with a literal href="#" placeholder (its own
-// README says "Add your ... URLs" as a before-you-go-live step), so this
-// keeps that placeholder pattern rather than omitting the links outright.
-import { withBase } from '../lib/url';
+// Social links now come from UMWAYI's site/links.md (real accounts, not
+// the reference's own href="#" placeholders), synced to the `links`
+// content collection by scripts/sync-content.mjs.
+import { getCollection } from 'astro:content';
+import { withBase, resolveLink } from '../lib/url';
 
 interface Props {
   simple?: boolean;
@@ -20,13 +20,8 @@ interface Props {
 }
 const { simple = false, backHref = withBase('/'), backLabel = 'Back to home' } = Astro.props;
 
-const socialLinks = [
-  { label: 'Hashnode', href: '#' },
-  { label: 'GitHub', href: 'https://github.com/Miguel-Shinyenyi' },
-  { label: 'LinkedIn', href: '#' },
-  { label: 'dev.to', href: '#' },
-  { label: 'Medium', href: '#' },
-];
+const [linksEntry] = await getCollection('links');
+const socialLinks = linksEntry.data.links;
 ---
 {simple ? (
   <footer class="bg-neutral text-[#A9B0A7]">
@@ -64,12 +59,22 @@ const socialLinks = [
       <div class="flex flex-col-reverse gap-4 border-t border-[#3A443E] pt-6 text-sm text-[#A9B0A7] md:flex-row md:items-center md:justify-between md:text-[15px]">
         <span>© 2026 Amwayi</span>
         <nav aria-label="Elsewhere" class="grid grid-cols-2 gap-x-7 gap-y-1 text-base font-bold md:flex">
-          {socialLinks.map((link) => (
-            <a href={link.href} class="py-3 text-ochre-light no-underline hover:underline">{link.label}</a>
-          ))}
+          {socialLinks.map((link) => {
+            const external = !link.url.startsWith('/');
+            return (
+              <a
+                href={resolveLink(link.url)}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noopener' : undefined}
+                class="py-3 text-ochre-light no-underline hover:underline"
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </nav>
       </div>
     </div>
   </footer>
 )}
-{!simple && <script src="../scripts/subscribe.js"></script>}
+<script src="../scripts/subscribe.js"></script>

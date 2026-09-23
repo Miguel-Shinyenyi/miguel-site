@@ -3,96 +3,107 @@
    against the reference implementation's src/input.css
    (~/Downloads/amwayi-site) where it has an equivalent rule.
 
-   No blanket `a { color: inherit }` here: skipping tailwindcss/preflight
-   (to keep Preflight off) means this file is the first place a "base"
-   layer ever gets declared, which makes @layer base the LAST-declared,
-   HIGHEST-priority layer in the whole cascade here, the opposite of a
-   normal Tailwind build's layer order. That silently beat daisyUI's own
-   .btn-neutral text color (unlayered would have too, for the same
-   "unlayered/mis-ordered beats every layered rule" reason). Scoping the
-   inherit-color reset to .navbar/.menu specifically, where it's actually
-   needed, sidesteps needing exact control over daisyUI's generated layer
-   names entirely. */
+   This element-level reset block lives in @layer base (order declared
+   once, first, in tailwind.css: theme, base, components, utilities), so
+   utility classes on the same element - mx-auto, mt-*, and the rest -
+   correctly outrank it. It used to be unlayered, which meant it won
+   against EVERY layered rule unconditionally regardless of order or
+   specificity, including utility classes applied directly to the same
+   element: the article illustration's <figure mx-auto> was stuck at the
+   left edge at wide viewports because this file's old unlayered
+   `figure { margin: 0 }` beat `.mx-auto`'s layered `margin-inline: auto`
+   outright. Verified fixed: the figure's left edge now lines up with the
+   title's at 1440/1920/2560.
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-}
-
-/* Preflight is off, so the UA stylesheet's default h1-h6/p margins were
-   never zeroed. Every section on this site lays headings and paragraphs
-   out with flex/grid `gap` (matching the reference, which gets this for
-   free from Preflight), so those UA margins stack on top of the gap
-   instead of being replaced by it - confirmed by comparing computed
-   margins on the hero's h1/p against the reference (0px there, ~14-51px
-   here) and it visibly inflated the hero, pillars and hub section
-   heights. .prose-amwayi already zeroes its own p/li margins for the
-   same reason; this covers everywhere else. */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-figure,
-dl,
-dd {
-  margin: 0;
-}
-
-/* Ported from the reference's own @layer base rule (src/input.css:
-   "h1, h2, h3 { @apply font-display; }"), missing here until now: every
-   h1/h2/h3 across the site (hero, article titles, section headings) was
-   silently falling back to Karla (the body/sans font) instead of
-   Fraunces, since nothing set the display font by default and none of
-   the heading markup applied font-display explicitly either. */
-h1,
-h2,
-h3 {
-  font-family: var(--font-display);
-}
-
-/* fieldset (the pillars radio group) carries a browser-default border,
-   padding and min-width that Preflight normally resets; without it the
-   fieldset drew a visible box around the whole pillar grid. */
-fieldset {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  min-width: 0;
-}
-
-/* :not(.hidden): this is unlayered, so (same cascade-layers reason as the
-   button/badge fixes elsewhere in this file) it would otherwise beat
-   Tailwind's own layered .hidden utility on svg icons like the theme
-   toggle's moon/sun pair, showing both at once regardless of state. */
-img:not(.hidden),
-svg:not(.hidden) {
-  display: block;
-  max-width: 100%;
-}
-
-:target {
-  scroll-margin-top: 6rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
+   Everything BELOW this block (.navbar a, .sticker, .pillar, etc) stays
+   unlayered on purpose: those are targeted, component-scoped overrides
+   that still need to unconditionally beat daisyUI's own layered rules
+   (the .btn-neutral text-color bug this comment used to describe), and
+   moving them into a layer would rank them below daisyUI's "daisyui"
+   layer and silently undo those fixes. Confirmed after this change:
+   .btn-neutral's text is still visible and the right color. */
+@layer base {
+  * {
+    box-sizing: border-box;
   }
-  *,
-  *::before,
-  *::after {
-    transition: none !important;
-    animation: none !important;
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  /* The UA stylesheet's default h1-h6/p margins were never zeroed with
+     Preflight off. Every section on this site lays headings and
+     paragraphs out with flex/grid `gap` (matching the reference, which
+     gets this for free from Preflight), so those UA margins stacked on
+     top of the gap instead of being replaced by it - confirmed by
+     comparing computed margins on the hero's h1/p against the reference
+     (0px there, ~14-51px here) and it visibly inflated the hero, pillars
+     and hub section heights. .prose-amwayi already zeroes its own p/li
+     margins for the same reason; this covers everywhere else. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  figure,
+  dl,
+  dd {
+    margin: 0;
+  }
+
+  /* Ported from the reference's own @layer base rule (src/input.css:
+     "h1, h2, h3 { @apply font-display; }"), missing here until now: every
+     h1/h2/h3 across the site (hero, article titles, section headings) was
+     silently falling back to Karla (the body/sans font) instead of
+     Fraunces, since nothing set the display font by default and none of
+     the heading markup applied font-display explicitly either. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+
+  /* fieldset (the pillars radio group) carries a browser-default border,
+     padding and min-width that Preflight normally resets; without it the
+     fieldset drew a visible box around the whole pillar grid. */
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  /* :not(.hidden): kept even now that this is layered, since it's still
+     scoped narrowly on purpose - not because it needs to beat a layered
+     rule unconditionally anymore, but so a plain element selector here
+     doesn't fight .hidden's own display:none via ordinary specificity
+     either. */
+  img:not(.hidden),
+  svg:not(.hidden) {
+    display: block;
+    max-width: 100%;
+  }
+
+  :target {
+    scroll-margin-top: 6rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+    }
   }
 }
 
@@ -461,14 +472,32 @@ body:has(#size-l:checked) .prose-amwayi {
   flex-direction: column;
   gap: 0.875rem;
 }
+/* li used to be `display: flex`, which turns every text run and every
+   inline element inside it (a bare word run, then a <code> span, then
+   another word run) into its own flex column, laid out side by side
+   instead of wrapping as one sentence. On "Every path needs an exit to
+   `UNKNOWN`, including a crash." this split the sentence into three
+   columns instead of wrapping normally. `display: block` plus the badge
+   pulled out of flow with `position: absolute` puts the sentence back on
+   normal lines while keeping the badge pinned to the first line. */
 #what-i-took-from-it + ol li {
   counter-increment: takeaway;
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
+  position: relative;
+  display: block;
+  padding-left: 46px;
+  min-height: 30px;
+}
+@media (min-width: 768px) {
+  #what-i-took-from-it + ol li {
+    padding-left: 50px;
+    min-height: 34px;
+  }
 }
 #what-i-took-from-it + ol li::before {
   content: counter(takeaway);
+  position: absolute;
+  left: 0;
+  top: -2px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -486,6 +515,7 @@ body:has(#size-l:checked) .prose-amwayi {
   #what-i-took-from-it + ol li::before {
     width: 34px;
     height: 34px;
+    top: -2px;
   }
 }
 

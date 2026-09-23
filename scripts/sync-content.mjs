@@ -32,10 +32,10 @@ function log(message) {
   console.log(`[sync-content] ${message}`);
 }
 
-// UMWAYI's site/README.md documents this folder as "journal/*.md", but the
-// real directory in the repo is "journals/" (plural). Reported, not
-// silently patched around forever: see docs/design.md's decisions log.
-// This map is the single place that reconciles the two.
+// UMWAYI's journal folder is "journals/" (plural) on disk; site/README.md
+// now documents it that way too (fixed 2026-09-23, see docs/design.md's
+// decisions log). This map is still the single place that renames it to
+// this repo's own "journal" content collection.
 const ARTICLE_DIRS = [
   { from: 'philosophy', to: 'philosophy' },
   { from: 'tech', to: 'tech' },
@@ -127,6 +127,16 @@ if (!existsSync(nowSrc)) {
 }
 copyFileSync(nowSrc, join(nowDestDir, 'now.md'));
 log('now.md -> src/content/now/now.md');
+
+// links.md (footer + profile links, front matter only)
+const linksDestDir = join(ROOT, 'src', 'content', 'links');
+emptyDir(linksDestDir);
+const linksSrc = join(sitePath, 'links.md');
+if (!existsSync(linksSrc)) {
+  fail('site/links.md is missing from UMWAYI.');
+}
+copyFileSync(linksSrc, join(linksDestDir, 'links.md'));
+log('links.md -> src/content/links/links.md');
 
 // illustrations/*.svg
 const illustrationsDest = join(ROOT, 'public', 'illustrations');
