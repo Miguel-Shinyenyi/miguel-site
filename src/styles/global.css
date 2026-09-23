@@ -450,6 +450,63 @@ body:has(#size-l:checked) .prose-amwayi {
   }
 }
 
+/* ---- MailerLite sign-up (footer). Everything here is scoped to the
+   embed's own container so none of it can reach the rest of the site, and
+   it exists only to keep MailerLite's class hooks from changing the look:
+   the site owns the styling, its script owns the behaviour. ---- */
+
+/* Success replaces the form, driven by the class ml_webform_success_*
+   adds (see Footer.astro), not by inline display, so daisyUI's own .alert
+   display stays intact instead of being flattened to block. */
+#mlb2-46272821 .row-success {
+  display: none;
+}
+#mlb2-46272821.ml-submitted .row-success {
+  display: grid;
+}
+#mlb2-46272821.ml-submitted .row-form {
+  display: none;
+}
+
+/* .loading is MailerLite's hook for the in-flight button, and also
+   daisyUI's spinner component, which would otherwise replace the button's
+   face with a spinning mask. Neutralized here so the button just keeps its
+   shape while the request is in flight. */
+#mlb2-46272821 .btn.loading {
+  mask-image: none;
+  -webkit-mask-image: none;
+  background-image: none;
+  animation: none;
+  width: auto;
+  height: auto;
+}
+
+/* MailerLite needs the input wrapped in .ml-field-group, which the old
+   markup didn't have. As a block box wrapping an inline-flex input it
+   added a baseline line box: 50px tall around a 48px input, which shifted
+   the whole joined row and made the phone footer 2px taller. Flex removes
+   the line box so the wrapper is exactly the input. */
+#mlb2-46272821 .ml-field-group {
+  display: flex;
+  /* As a .join child it also picks up daisyUI's own 1px join-item border,
+     on top of the input's. Border-box made that a 50px wrapper around a
+     48px input, growing the joined row by 2px. The input carries the
+     visible border; the wrapper is only a hook for MailerLite's script. */
+  border: 0;
+}
+
+/* MailerLite's script adds .ml-error to the field group for a bad
+   address; the message is otherwise hidden. */
+#mlb2-46272821 .ml-error-message {
+  display: none;
+}
+#mlb2-46272821 .ml-block-form:has(.ml-field-group.ml-error) .ml-error-message {
+  display: grid;
+}
+#mlb2-46272821 .ml-field-group.ml-error .input {
+  border-color: var(--color-error);
+}
+
 .toc-link[aria-current='true'] {
   background: var(--color-base-300);
   font-weight: 700;

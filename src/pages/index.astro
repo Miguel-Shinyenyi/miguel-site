@@ -11,15 +11,15 @@ import { withBase, resolveLink } from '../lib/url';
 import { getCollection } from 'astro:content';
 import { getOpenThreads } from '../lib/openThreads';
 
-const philosophyEntries = (await getCollection('philosophy', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 3);
-const techEntries = (await getCollection('tech', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 3);
-const journalEntries = (await getCollection('journal', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 3);
+// Newest first, kept whole: the tabs show the three newest (the
+// reference's own design) but each tab also links to its section index,
+// and that link carries the real total, so both need the full list.
+const byNewest = <T extends { data: { date: Date } }>(entries: T[]) =>
+  [...entries].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const allPhilosophy = byNewest(await getCollection('philosophy', ({ data }) => !data.draft));
+const allTech = byNewest(await getCollection('tech', ({ data }) => !data.draft));
+const allJournal = byNewest(await getCollection('journal', ({ data }) => !data.draft));
 
 const projectEntries = (await getCollection('projects', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
@@ -63,26 +63,33 @@ const pillars = [
   },
 ];
 
+// allLabel counts every non-draft entry in the section, not just the three
+// shown: before this, nine journal entries were live and indexed but only
+// the three newest were reachable from the homepage, with nothing linking
+// to the section indexes that already existed.
 const writingTabs = [
   {
     id: 'philosophy',
     label: 'Philosophy',
     blurb: 'Articles on how to think and live.',
-    entries: philosophyEntries,
+    entries: allPhilosophy.slice(0, 3),
+    allLabel: `All philosophy articles (${allPhilosophy.length})`,
     italic: false,
   },
   {
     id: 'tech',
     label: 'Tech',
     blurb: 'Articles on backend systems, data and AI.',
-    entries: techEntries,
+    entries: allTech.slice(0, 3),
+    allLabel: `All tech articles (${allTech.length})`,
     italic: false,
   },
   {
     id: 'journal',
     label: 'Journal',
     blurb: 'Articles drawn from my daily entries.',
-    entries: journalEntries,
+    entries: allJournal.slice(0, 3),
+    allLabel: `All journal entries (${allJournal.length})`,
     italic: true,
   },
 ];
@@ -320,6 +327,12 @@ const nowRows = nowEntry
                 <li class="border-t border-base-300 py-5 text-muted">Nothing published here yet.</li>
               )}
             </ul>
+            <a
+              href={withBase(`/${tab.id}`)}
+              class="link link-hover link-primary inline-block py-3 text-base font-bold md:text-[17px]"
+            >
+              {tab.allLabel}
+            </a>
           </div>
         </>
       ))}

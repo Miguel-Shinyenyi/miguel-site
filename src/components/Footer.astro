@@ -38,23 +38,72 @@ const socialLinks = linksEntry.data.links;
           <h2 class="text-[34px] leading-[1.08] tracking-[-0.02em] md:text-[52px]">Read along as I learn.</h2>
           <p class="text-[17px] leading-relaxed text-[#C9CEC6] md:text-[19px]">One email when a new article goes out. No noise.</p>
         </div>
-        <form id="subscribe" class="flex flex-col gap-3" novalidate>
-          <label for="email" class="text-sm font-bold text-[#C9CEC6] md:text-[15px]">Email address</label>
-          <div class="join join-vertical w-full gap-2.5 md:join-horizontal md:gap-0">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              placeholder="you@example.com"
-              autocomplete="email"
-              class="input join-item input-lg w-full rounded-full border-[#F3EEE3] bg-[#F3EEE3] text-ink md:rounded-r-none"
-            />
-            <button class="btn btn-accent btn-lg join-item rounded-full md:rounded-l-none md:px-7">Subscribe</button>
+        {/*
+          MailerLite's "HTML code" embed, kept in this site's own markup.
+          Not the Universal script and not the `.ml-embedded` div: both of
+          those render MailerLite's own markup and styles, which would not
+          match this footer. Everything cosmetic from the export is gone
+          (its <style> blocks, the Open Sans @import, the "Newsletter /
+          Signup for news and special offers!" copy, the duplicate
+          horizontal and mobile buttons, target="_blank"); what stays is
+          only what groot.mailerlite.com/js/w/webforms.min.js looks for by
+          name: the container id, ml-subscribe-form-<embed id>, .row-form,
+          .row-success, .ml-block-form, .ml-field-group/.ml-field-email/
+          .ml-validate-*, fields[email], the ml-submit and anticsrf
+          hidden inputs, and button.loading.
+        */}
+        <div
+          id="mlb2-46272821"
+          class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-46272821"
+        >
+          <div class="row-form flex flex-col gap-3">
+            <form
+              class="ml-block-form flex flex-col gap-3"
+              action="https://assets.mailerlite.com/jsonp/2655737/forms/199417862744441907/subscribe"
+              method="post"
+              data-code=""
+              novalidate
+            >
+              <label for="email" class="text-sm font-bold text-[#C9CEC6] md:text-[15px]">Email address</label>
+              <div class="join join-vertical w-full gap-2.5 md:join-horizontal md:gap-0">
+                <div class="ml-field-group ml-field-email ml-validate-email ml-validate-required join-item w-full">
+                  <input
+                    id="email"
+                    name="fields[email]"
+                    type="email"
+                    required
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    class="input input-lg w-full rounded-full border-[#F3EEE3] bg-[#F3EEE3] text-ink md:rounded-r-none"
+                  />
+                </div>
+                <button type="submit" class="btn btn-accent btn-lg join-item rounded-full md:rounded-l-none md:px-7">
+                  Subscribe
+                </button>
+                {/* Swapped in by MailerLite's script while the request is in
+                    flight. .loading is its hook, not daisyUI's spinner
+                    component, which global.css neutralizes inside this
+                    container so the button keeps its shape. */}
+                <button
+                  type="button"
+                  disabled
+                  style="display: none;"
+                  class="loading btn btn-accent btn-lg join-item rounded-full md:rounded-l-none md:px-7"
+                >
+                  Subscribing...
+                </button>
+              </div>
+              <input type="hidden" name="ml-submit" value="1" />
+              <input type="hidden" name="anticsrf" value="true" />
+              <div role="alert" class="ml-error-message alert alert-error">
+                That email doesn't look right. Check it and try again.
+              </div>
+            </form>
           </div>
-          <div id="subscribe-ok" role="status" class="alert alert-success hidden">Thanks. You'll get the next article.</div>
-          <div id="subscribe-err" role="alert" class="alert alert-error hidden">That email doesn't look right. Check it and try again.</div>
-        </form>
+          <div class="row-success alert alert-success" role="status">
+            You're on the list. You'll hear when a new article is up.
+          </div>
+        </div>
       </div>
       <div class="flex flex-col-reverse gap-4 border-t border-[#3A443E] pt-6 text-sm text-[#A9B0A7] md:flex-row md:items-center md:justify-between md:text-[15px]">
         <span>© 2026 Amwayi</span>
@@ -75,6 +124,26 @@ const socialLinks = linksEntry.data.links;
         </nav>
       </div>
     </div>
+    {/*
+      All three of these are is:inline on purpose. The success callback has
+      to be a real global for MailerLite's script to find it by name, which
+      an Astro-processed module script would not be, and the other two are
+      external/third-party so there is nothing to bundle. They sit inside
+      this branch so nothing MailerLite-related loads on article pages,
+      which have the simple footer and no form.
+    */}
+    <script is:inline>
+      function ml_webform_success_46272821() {
+        var container = document.getElementById('mlb2-46272821');
+        if (container) container.classList.add('ml-submitted');
+      }
+    </script>
+    <script is:inline>
+      fetch('https://assets.mailerlite.com/jsonp/2655737/forms/199417862744441907/takel');
+    </script>
+    <script
+      is:inline
+      src="https://groot.mailerlite.com/js/w/webforms.min.js?v83147fa8ce2d95cb73ece7f28b469519"
+    ></script>
   </footer>
 )}
-<script src="../scripts/subscribe.js"></script>

@@ -11,6 +11,7 @@
     "check:mobile": "node scripts/check-mobile-viewport.mjs"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.19",
     "astro": "^4.15.0"
   },
   "devDependencies": {
