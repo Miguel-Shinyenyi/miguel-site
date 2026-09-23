@@ -1,4 +1,9 @@
 ---
+// Homepage, matched against the real reference implementation at
+// ~/Downloads/amwayi-site/index.html (markup, classes, copy) rather than
+// just docs/redesign-spec-2026-09-23.md's rougher samples. Real content
+// (writing entries, projects, now) still comes from Astro's content
+// collections, per docs/design.md's meshing notes.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Shepherd from '../components/Shepherd.astro';
 import ProjectCard from '../components/ProjectCard.astro';
@@ -31,35 +36,57 @@ const pillars = [
     title: 'Myself',
     body: 'I journal daily. Writing shows me my habits, my choices and the reasons behind them.',
     practice: 'A daily entry. What I did, what I felt, what I learned.',
+    icon: `<svg width="120" height="88" viewBox="0 0 120 88" fill="none"><path d="M20 22 Q40 14 60 22 V74 Q40 66 20 74 Z" fill="#fff" stroke="#1D2420" stroke-width="3" stroke-linejoin="round"/><path d="M60 22 Q80 14 100 22 V74 Q80 66 60 74 Z" fill="#fff" stroke="#1D2420" stroke-width="3" stroke-linejoin="round"/><path d="M28 34 H50 M28 44 H50 M28 54 H44 M68 34 H90 M68 44 H84" stroke="#9A5B1E" stroke-width="3" stroke-linecap="round"/><path d="M82 72 L102 32 L109 35 L89 75 Z" fill="#B23A2E" stroke="#1D2420" stroke-width="3" stroke-linejoin="round"/></svg>`,
   },
   {
     n: '02',
     title: 'My tools',
     body: 'I study the technology that shapes my work: backend systems, data and AI. I learn it by building it.',
     practice: "Build it, break it, then write down why it broke.",
+    icon: `<svg width="120" height="88" viewBox="0 0 120 88" fill="none"><rect x="26" y="14" width="68" height="48" rx="5" fill="#1D2420" stroke="#1D2420" stroke-width="3"/><path d="M46 30 L37 38 L46 46 M74 30 L83 38 L74 46 M64 26 L56 50" stroke="#E0A965" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 66 H108 L101 77 H19 Z" fill="#C4D1BA" stroke="#1D2420" stroke-width="3" stroke-linejoin="round"/></svg>`,
   },
   {
     n: '03',
     title: 'People and the world',
     body: 'I read history and philosophy to see why people think and act as they do. I aim to understand, not to judge.',
     practice: 'Read one idea, then ask who it helps and who it leaves out.',
+    icon: `<svg width="120" height="88" viewBox="0 0 120 88" fill="none"><circle cx="50" cy="50" r="28" fill="#DCE3D2" stroke="#1D2420" stroke-width="3"/><path d="M32 40 Q40 31 49 37 Q55 43 47 49 Q38 53 34 47 Z" fill="#3F5A3C"/><path d="M56 56 Q64 49 71 57 Q69 67 60 69 Q54 63 56 56 Z" fill="#3F5A3C"/><ellipse cx="50" cy="50" rx="12" ry="28" stroke="#1D2420" stroke-width="2"/><path d="M80 10 H108 Q112 10 112 14 V30 Q112 34 108 34 H92 L85 41 L86 34 H80 Q76 34 76 30 V14 Q76 10 80 10 Z" fill="#fff" stroke="#1D2420" stroke-width="3" stroke-linejoin="round"/><circle cx="86" cy="22" r="2.5" fill="#1D2420"/><circle cx="94" cy="22" r="2.5" fill="#1D2420"/><circle cx="102" cy="22" r="2.5" fill="#1D2420"/></svg>`,
   },
   {
     n: '04',
     title: 'Putting it to use',
     body: "Knowledge counts when it changes what I do. I turn lessons into routines, projects and goals.",
     practice: "Every lesson ends with one change to tomorrow's routine.",
+    icon: `<svg width="120" height="88" viewBox="0 0 120 88" fill="none"><path d="M4 82 Q40 44 70 52 Q98 58 116 82 Z" fill="#C4D1BA" stroke="#1D2420" stroke-width="3" stroke-linejoin="round"/><path d="M18 78 Q40 66 52 58 Q60 53 66 50" stroke="#1D2420" stroke-width="2.5" stroke-dasharray="1 6" stroke-linecap="round"/><path d="M68 50 V12" stroke="#1D2420" stroke-width="3" stroke-linecap="round"/><path d="M68 12 L96 19 L68 28 Z" fill="#B23A2E" stroke="#1D2420" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="44" r="7" fill="#E0A965" stroke="#1D2420" stroke-width="3"/></svg>`,
   },
 ];
 
 const writingTabs = [
-  { id: 'philosophy', label: 'Philosophy', blurb: 'Articles on how to think and live.', entries: philosophyEntries, italic: false },
-  { id: 'tech', label: 'Tech', blurb: 'Notes on backend systems, data and AI.', entries: techEntries, italic: false },
-  { id: 'journal', label: 'Journal', blurb: 'Short, edited excerpts from daily entries.', entries: journalEntries, italic: true },
+  {
+    id: 'philosophy',
+    label: 'Philosophy',
+    blurb: 'Articles on how to think and live.',
+    entries: philosophyEntries,
+    italic: false,
+  },
+  {
+    id: 'tech',
+    label: 'Tech',
+    blurb: 'Articles on backend systems, data and AI.',
+    entries: techEntries,
+    italic: false,
+  },
+  {
+    id: 'journal',
+    label: 'Journal',
+    blurb: 'Articles drawn from my daily entries.',
+    entries: journalEntries,
+    italic: true,
+  },
 ];
 
 const readTimeFor = (body: string) => Math.max(1, Math.round(body.split(/\s+/).filter(Boolean).length / 215));
-const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
 
 const nowRows = nowEntry
   ? [
@@ -70,192 +97,244 @@ const nowRows = nowEntry
     ]
   : [];
 ---
-<BaseLayout title="Amwayi">
-  <!-- Hero (4.2) -->
-  <section class="px-5 py-16 md:px-24 md:py-28">
-    <div class="grid items-center gap-10 md:grid-cols-2 md:gap-16">
-      <div>
-        <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Amwayi means shepherd</span>
-        <h1 class="mt-3 font-display text-[44px] leading-none tracking-tight md:text-[76px]">
-          Understanding, tended daily.
-        </h1>
-        <p class="mt-6 max-w-prose text-lg leading-relaxed text-base-content/80">
-          I journal to understand myself, study to understand technology, read to understand people, and build to
-          put it all to use. The journal is the hub. Everything else is a spoke.
-        </p>
-        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-          <a href={withBase('/journal')} class="btn btn-neutral w-full rounded-full sm:w-auto">Read the journal</a>
-          <a href={`${withBase('/')}#projects`} class="btn btn-outline w-full rounded-full sm:w-auto">See the projects</a>
-        </div>
+<BaseLayout title="Amwayi · Philosophy, tech and journaling">
+  <!-- ============ HERO ============ -->
+  <section
+    id="top"
+    class="mx-auto grid max-w-[1440px] items-center gap-8 px-5 pb-14 pt-9 md:grid-cols-2 md:gap-16 md:px-24 md:pb-[100px] md:pt-[72px]"
+  >
+    <div class="flex flex-col gap-5 md:gap-7">
+      <p class="eyebrow">Umwayi means shepherd</p>
+      <h1 class="text-[44px] leading-[1.03] tracking-[-0.025em] md:text-[76px]">
+        I tend what I learn and put it to work.
+      </h1>
+      <p class="max-w-[540px] text-lg leading-relaxed text-muted md:text-[21px]">
+        I'm Amwayi, a backend engineer in Nairobi. I write about philosophy, technology and journaling. I study
+        myself, my tools and the people around me, then use what I find to reach my goals.
+      </p>
+      <div class="hidden gap-4 pt-2 md:flex">
+        <a href="#writing" class="btn btn-neutral btn-lg rounded-full px-7 text-[17px]">Read the articles</a>
+        <a href="#projects" class="btn btn-outline btn-lg rounded-full border-base-content px-7 text-[17px]">See the projects</a>
       </div>
+    </div>
 
-      <div class="relative mx-auto aspect-[600/560] w-full max-w-[600px]">
+    <div class="flex justify-center md:justify-end">
+      <div class="relative aspect-[600/560] w-full max-w-[600px]">
         <Shepherd />
+
         <button
-          id="thought"
           type="button"
-          class="absolute left-[3%] top-[4%] w-[62%] rounded-[32px] border-2 border-neutral bg-white px-5 py-4 text-left text-neutral md:w-[56%] md:rounded-[64px] md:px-8 md:py-6"
-          aria-live="polite"
+          id="thought"
+          class="absolute left-[2%] top-[3%] flex w-[57%] cursor-pointer flex-col gap-1.5 rounded-[36px] border-2 border-ink bg-white px-[5%] py-[3.5%] text-left text-ink transition-transform hover:-translate-y-0.5 md:gap-2.5 md:rounded-[64px]"
+          aria-label="The shepherd is thinking. Show another thought."
         >
-          <span id="thought-text" class="font-display text-base italic leading-tight md:text-2xl">
+          <span id="thought-text" aria-live="polite" class="font-display text-base italic leading-tight sm:text-xl md:text-[25px]">
             Who shepherds the shepherd?
           </span>
-          <span class="mt-2 block text-xs font-bold text-[#5B615B] md:text-sm">Tap for another thought</span>
+          <span class="flex items-center gap-2 text-xs font-bold text-[#5B615B] md:text-sm">
+            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12a9 9 0 1 1-3-6.7L21 8" /><path d="M21 3v5h-5" />
+            </svg>
+            Tap for another thought
+          </span>
         </button>
       </div>
     </div>
+
+    <div class="flex flex-col gap-3 md:hidden">
+      <a href="#writing" class="btn btn-neutral btn-lg rounded-full text-[17px]">Read the articles</a>
+      <a href="#projects" class="btn btn-outline btn-lg rounded-full border-base-content text-[17px]">See the projects</a>
+    </div>
   </section>
 
-  <!-- Four things I try to understand (4.3) -->
-  <section id="philosophy" class="bg-base-200 px-5 py-16 md:px-24 md:py-28">
-    <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Philosophy</span>
-    <h2 class="mt-2 font-display text-[34px] md:text-[52px]">Four things I try to understand</h2>
-    <div class="mt-10 grid gap-3 md:grid-cols-4 md:gap-6">
-      {pillars.map((p, i) => (
-        <div class="collapse rounded-box bg-base-100 has-[:checked]:bg-neutral has-[:checked]:text-neutral-content">
-          <input type="radio" name="pillar" checked={i === 0} aria-label={p.title} />
-          <div class="collapse-title">
-            <span class="font-display text-4xl text-primary">{p.n}</span>
-            <h3 class="font-display text-2xl font-semibold">{p.title}</h3>
-            <p class="opacity-80">{p.body}</p>
-          </div>
-          <div class="collapse-content">
-            <p class="font-display text-xl">In practice: {p.practice}</p>
-          </div>
+  <!-- ============ PILLARS ============ -->
+  <section id="philosophy" class="border-y border-base-300 bg-base-200">
+    <div id="pillars" class="mx-auto flex max-w-[1440px] flex-col gap-6 px-5 py-16 md:gap-12 md:px-24 md:py-[110px]">
+      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-16">
+        <div class="flex flex-col gap-4">
+          <p class="eyebrow">What I work on</p>
+          <h2 class="text-[34px] leading-[1.08] tracking-[-0.02em] md:text-[52px]">Four things I try to understand</h2>
         </div>
-      ))}
+        <p class="max-w-[420px] text-[17px] leading-relaxed text-muted md:text-lg">
+          Each one feeds the next. The last one is the reason for the other three. Pick one to see how I practice it.
+        </p>
+      </div>
+
+      <fieldset class="grid gap-3 md:grid-cols-4 md:gap-6">
+        <legend class="sr-only">Pick a pillar</legend>
+        {pillars.map((p, i) => (
+          <label class="pillar md:min-h-[400px]">
+            <input type="radio" name="pillar" value={String(i + 1)} class="sr-only" checked={i === 0} />
+            <span class="sticker-sm flex h-[88px] w-[120px] shrink-0 rounded-[14px] bg-[#FBF8F1]" aria-hidden="true" set:html={p.icon} />
+            <span class="flex items-baseline gap-3.5 md:flex-col md:gap-4">
+              <span class="pillar-num font-display text-[28px] text-primary md:text-[40px]">{p.n}</span>
+              <span class="font-display text-[22px] font-semibold md:text-[26px]">{p.title}</span>
+            </span>
+            <span class="pillar-body text-base leading-relaxed text-muted md:text-[17px]">{p.body}</span>
+          </label>
+        ))}
+      </fieldset>
+
+      <div role="status" class="flex flex-col gap-2 rounded-2xl border-[1.5px] border-dashed border-base-300 p-5 md:flex-row md:items-center md:gap-6 md:px-8 md:py-6">
+        <span class="eyebrow shrink-0">In practice</span>
+        {pillars.map((p, i) => (
+          <p class:list={['practice', `practice-${i + 1}`, 'font-display text-[19px] leading-snug md:text-[22px]']}>{p.practice}</p>
+        ))}
+      </div>
     </div>
   </section>
 
-  <!-- How it fits together (4.4) -->
-  <section id="hub-section" class="bg-neutral px-5 py-16 text-neutral-content md:px-24 md:py-28">
-    <span class="text-sm font-bold uppercase tracking-[0.14em] text-accent">How it fits together</span>
-    <h2 class="mt-2 font-display text-[34px] md:text-[52px]">The journal is the hub</h2>
+  <!-- ============ HUB ============ -->
+  <section id="hub" class="bg-neutral text-neutral-content">
+    <div class="mx-auto grid max-w-[1440px] items-center gap-8 px-5 py-16 md:grid-cols-2 md:gap-20 md:px-24 md:py-[110px]">
+      <div class="flex flex-col gap-6 md:gap-7">
+        <p class="eyebrow !text-ochre-light">How it fits together</p>
+        <h2 class="text-[34px] leading-[1.08] tracking-[-0.02em] md:text-[52px]">The journal sits at the center.</h2>
+        <p class="max-w-[540px] text-[17px] leading-relaxed text-[#C9CEC6] md:text-[19px]">
+          Every entry feeds the rest. An idea becomes an article. A lesson becomes a habit. A problem becomes a
+          project.
+        </p>
 
-    <ul class="steps steps-horizontal mt-10 w-full">
-      <li class="step step-accent">Observe</li>
-      <li class="step step-accent">Write</li>
-      <li class="step step-accent">Connect</li>
-      <li class="step step-accent">Apply</li>
-    </ul>
-
-    <div class="mt-12 grid gap-10 md:grid-cols-2 md:items-center">
-      <svg viewBox="0 0 520 320" class="w-full" role="img" aria-label="A diagram of the journal at the center, connected by four spokes to philosophy, tech, people, and projects.">
-        <line x1="260" y1="160" x2="100" y2="70" stroke="currentColor" stroke-opacity="0.35" stroke-width="2" />
-        <line x1="260" y1="160" x2="420" y2="70" stroke="currentColor" stroke-opacity="0.35" stroke-width="2" />
-        <line x1="260" y1="160" x2="100" y2="250" stroke="currentColor" stroke-opacity="0.35" stroke-width="2" />
-        <line x1="260" y1="160" x2="420" y2="250" stroke="currentColor" stroke-opacity="0.35" stroke-width="2" />
-
-        <g id="node-philosophy"><circle cx="100" cy="70" r="34" fill="var(--color-base-100)" /><text x="100" y="75" text-anchor="middle" font-size="13" fill="var(--color-base-content)">Philosophy</text></g>
-        <g id="node-tech"><circle cx="420" cy="70" r="34" fill="var(--color-base-100)" /><text x="420" y="75" text-anchor="middle" font-size="13" fill="var(--color-base-content)">Tech</text></g>
-        <g id="node-people"><circle cx="100" cy="250" r="34" fill="var(--color-base-100)" /><text x="100" y="255" text-anchor="middle" font-size="13" fill="var(--color-base-content)">People</text></g>
-        <g id="node-projects"><circle cx="420" cy="250" r="34" fill="var(--color-base-100)" /><text x="420" y="255" text-anchor="middle" font-size="13" fill="var(--color-base-content)">Projects</text></g>
-        <g id="node-journal"><circle cx="260" cy="160" r="46" fill="var(--color-primary)" /><text x="260" y="166" text-anchor="middle" font-size="15" font-weight="700" fill="var(--color-primary-content)">Journal</text></g>
-      </svg>
-
-      <div role="tablist" class="tabs tabs-box gap-2 bg-transparent" id="hub">
-        <input type="radio" name="hub" class="tab rounded-full" aria-label="Journal" checked />
-        <div class="tab-content pt-6 font-display text-xl">The source of truth. Every day starts or ends here.</div>
-        <input type="radio" name="hub" class="tab rounded-full" aria-label="Philosophy" />
-        <div class="tab-content pt-6 font-display text-xl">Questions from the journal become articles on how to think and live.</div>
-        <input type="radio" name="hub" class="tab rounded-full" aria-label="Tech" />
-        <div class="tab-content pt-6 font-display text-xl">Problems I hit at work become notes on systems, data and AI.</div>
-        <input type="radio" name="hub" class="tab rounded-full" aria-label="People" />
-        <div class="tab-content pt-6 font-display text-xl">Conversations and reading become notes on how others see the world.</div>
-        <input type="radio" name="hub" class="tab rounded-full" aria-label="Projects" />
-        <div class="tab-content pt-6 font-display text-xl">Lessons become code, routines and tools I use every day.</div>
-      </div>
-    </div>
-
-    {threads.length > 0 && (
-      <div class="mt-16 border-t border-neutral-content/20 pt-10">
-        <h3 class="font-display text-2xl font-semibold">Open threads</h3>
-        <ul class="mt-6 flex flex-col gap-5">
-          {threads.map((thread) => (
-            <li>
-              <span class="block text-xs font-bold uppercase tracking-[0.1em] text-accent">{thread.project}</span>
-              <span class="block">{thread.text}</span>
-            </li>
-          ))}
+        <ul class="steps steps-vertical sm:steps-horizontal w-full max-w-[560px] text-[15px]">
+          <li class="step step-accent" data-content="1">Observe</li>
+          <li class="step step-accent" data-content="2">Write</li>
+          <li class="step step-accent" data-content="3">Connect</li>
+          <li class="step step-accent" data-content="4">Apply</li>
         </ul>
-        <p class="mt-6 text-sm text-neutral-content/70">Pulled from the UMWAYI hub at build time, as of {asOf}.</p>
+
+        <div role="tablist" aria-label="Explore the hub" class="tabs tabs-box max-w-[560px] gap-2 bg-transparent p-0">
+          <input type="radio" name="hub" value="journal" class="tab rounded-full border-[1.5px] border-[#4A5650] font-bold text-neutral-content checked:!text-ink checked:border-ochre-light checked:bg-ochre-light" aria-label="Journal" checked />
+          <div class="tab-content pt-4 font-display text-[19px] leading-snug md:text-[22px]">The source of truth. Every day starts or ends here.</div>
+          <input type="radio" name="hub" value="philosophy" class="tab rounded-full border-[1.5px] border-[#4A5650] font-bold text-neutral-content checked:!text-ink checked:border-ochre-light checked:bg-ochre-light" aria-label="Philosophy" />
+          <div class="tab-content pt-4 font-display text-[19px] leading-snug md:text-[22px]">Questions from the journal become articles on how to think and live.</div>
+          <input type="radio" name="hub" value="tech" class="tab rounded-full border-[1.5px] border-[#4A5650] font-bold text-neutral-content checked:!text-ink checked:border-ochre-light checked:bg-ochre-light" aria-label="Tech" />
+          <div class="tab-content pt-4 font-display text-[19px] leading-snug md:text-[22px]">Problems I hit at work become articles on systems, data and AI.</div>
+          <input type="radio" name="hub" value="people" class="tab rounded-full border-[1.5px] border-[#4A5650] font-bold text-neutral-content checked:!text-ink checked:border-ochre-light checked:bg-ochre-light" aria-label="People" />
+          <div class="tab-content pt-4 font-display text-[19px] leading-snug md:text-[22px]">Conversations and reading become notes on how others see the world.</div>
+          <input type="radio" name="hub" value="projects" class="tab rounded-full border-[1.5px] border-[#4A5650] font-bold text-neutral-content checked:!text-ink checked:border-ochre-light checked:bg-ochre-light" aria-label="Projects" />
+          <div class="tab-content pt-4 font-display text-[19px] leading-snug md:text-[22px]">Lessons become code, routines and tools I use every day.</div>
+        </div>
+
+        {threads.length > 0 && (
+          <div class="mt-4 border-t border-neutral-content/20 pt-8">
+            <h3 class="font-display text-xl font-semibold">Open threads</h3>
+            <ul class="mt-5 flex flex-col gap-4">
+              {threads.map((thread) => (
+                <li>
+                  <span class="block text-xs font-bold uppercase tracking-[0.1em] text-ochre-light">{thread.project}</span>
+                  <span class="block">{thread.text}</span>
+                </li>
+              ))}
+            </ul>
+            <p class="mt-5 text-sm text-neutral-content/60">Pulled from the UMWAYI hub at build time, as of {asOf}.</p>
+          </div>
+        )}
       </div>
-    )}
+
+      <div class="flex justify-center">
+        <svg class="h-auto w-full max-w-[480px]" viewBox="0 0 480 460" fill="none" role="img" aria-label="Journal at the center, connected to philosophy, tech, people and projects">
+          <g stroke="#4A5650" stroke-width="1.5">
+            <line x1="240" y1="230" x2="240" y2="70" /><line x1="240" y1="230" x2="400" y2="230" />
+            <line x1="240" y1="230" x2="240" y2="390" /><line x1="240" y1="230" x2="80" y2="230" />
+          </g>
+          <circle cx="240" cy="230" r="150" stroke="#3A443E" stroke-dasharray="3 7" />
+          <g class="hub-node node-journal"><circle cx="240" cy="230" r="64" stroke-width="2" /><text x="240" y="237" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="21" font-weight="600">Journal</text></g>
+          <g class="hub-node node-philosophy"><circle cx="240" cy="70" r="48" stroke-width="2" /><text x="240" y="76" text-anchor="middle" font-family="Karla, sans-serif" font-size="16" font-weight="700">Philosophy</text></g>
+          <g class="hub-node node-tech"><circle cx="400" cy="230" r="48" stroke-width="2" /><text x="400" y="236" text-anchor="middle" font-family="Karla, sans-serif" font-size="16" font-weight="700">Tech</text></g>
+          <g class="hub-node node-projects"><circle cx="240" cy="390" r="48" stroke-width="2" /><text x="240" y="396" text-anchor="middle" font-family="Karla, sans-serif" font-size="16" font-weight="700">Projects</text></g>
+          <g class="hub-node node-people"><circle cx="80" cy="230" r="48" stroke-width="2" /><text x="80" y="236" text-anchor="middle" font-family="Karla, sans-serif" font-size="16" font-weight="700">People</text></g>
+        </svg>
+      </div>
+    </div>
   </section>
 
-  <!-- Writing (4.5) -->
-  <section id="writing" class="px-5 py-16 md:px-24 md:py-28">
-    <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Writing</span>
-    <h2 class="mt-2 font-display text-[34px] md:text-[52px]">Latest entries</h2>
+  <!-- ============ WRITING ============ -->
+  <section id="writing" class="mx-auto flex max-w-[1440px] flex-col gap-6 px-5 py-16 md:gap-12 md:px-24 md:py-[110px]">
+    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div class="flex flex-col gap-4">
+        <p class="eyebrow">Writing</p>
+        <h2 class="text-[34px] tracking-[-0.02em] md:text-[52px]">Recent articles</h2>
+      </div>
+      <a href="#" class="link link-primary py-3 text-base font-bold md:text-[17px]">All articles on Hashnode</a>
+    </div>
 
-    <div role="tablist" class="tabs tabs-box mt-10 w-full rounded-full md:w-auto">
+    <div role="tablist" aria-label="Article topics" class="tabs w-full gap-1.5">
       {writingTabs.map((tab, i) => (
         <>
-          <input type="radio" name="writing" class="tab rounded-full" aria-label={tab.label} checked={i === 0} />
-          <div class="tab-content pt-6">
-            <p class="mb-4 text-base-content/80">{tab.blurb}</p>
-            {tab.entries.length > 0 ? (
-              <ul class="list">
-                {tab.entries.map((entry) => (
-                  <li class="list-row">
+          <input
+            type="radio"
+            name="writing"
+            class="tab h-11 flex-1 rounded-full bg-base-300 font-bold checked:!text-base-100 checked:bg-base-content md:flex-none md:px-6"
+            aria-label={tab.label}
+            checked={i === 0}
+          />
+          <div class="tab-content">
+            <p class="py-5 text-base text-muted md:text-lg">{tab.blurb}</p>
+            <ul class="border-b border-base-300">
+              {tab.entries.length > 0 ? (
+                tab.entries.map((entry) => (
+                  <li>
                     <a
                       href={withBase(`/${tab.id}/${entry.slug}`)}
-                      class:list={['font-display text-2xl text-base-content no-underline hover:text-primary', { italic: tab.italic }]}
+                      class:list={[
+                        'row-link flex flex-col gap-1.5 border-t border-base-300 py-5 hover:text-primary md:flex-row md:items-baseline md:justify-between md:gap-6 md:py-6',
+                        { italic: tab.italic },
+                      ]}
                     >
-                      {entry.data.title}
+                      <span class="font-display text-[21px] leading-snug md:text-[26px]">{entry.data.title}</span>
+                      <span class="shrink-0 text-sm text-soft md:text-[15px]">{fmt(entry.data.date)} · {readTimeFor(entry.body)} min read</span>
                     </a>
-                    <span class="text-sm opacity-70">{fmt(entry.data.date)} · {readTimeFor(entry.body)} min</span>
                   </li>
-                ))}
-              </ul>
-            ) : (
-              <p class="text-base-content/60">Nothing published here yet.</p>
-            )}
-            <a href={withBase(`/${tab.id}`)} class="link link-primary mt-4 inline-block font-bold">
-              See all {tab.label.toLowerCase()} →
-            </a>
+                ))
+              ) : (
+                <li class="border-t border-base-300 py-5 text-muted">Nothing published here yet.</li>
+              )}
+            </ul>
           </div>
         </>
       ))}
     </div>
   </section>
 
-  <!-- Projects (4.6) -->
-  <section id="projects" class="bg-base-200 px-5 py-16 md:px-24 md:py-28">
-    <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Built, not just planned</span>
-    <h2 class="mt-2 font-display text-[34px] md:text-[52px]">Projects</h2>
-    <div class="mt-10 grid gap-3 md:grid-cols-2 md:gap-6">
-      {projectEntries.map((entry) => (
-        <ProjectCard
-          title={entry.data.title}
-          summary={entry.data.summary}
-          status={entry.data.status}
-          statusVariant={entry.data.statusVariant}
-          category={entry.data.category}
-          stack={entry.data.stack}
-          link={entry.data.link}
-          linkLabel={entry.data.linkLabel}
-        />
-      ))}
+  <!-- ============ PROJECTS ============ -->
+  <section id="projects" class="border-y border-base-300 bg-base-200">
+    <div class="mx-auto flex max-w-[1440px] flex-col gap-6 px-5 py-16 md:gap-12 md:px-24 md:py-[110px]">
+      <div class="flex flex-col gap-4">
+        <p class="eyebrow">Projects</p>
+        <h2 class="text-[34px] tracking-[-0.02em] md:text-[52px]">What I'm building</h2>
+      </div>
+      <div class="grid gap-4 md:grid-cols-3 md:gap-6">
+        {projectEntries.map((entry) => (
+          <ProjectCard
+            title={entry.data.title}
+            summary={entry.data.summary}
+            status={entry.data.status}
+            statusVariant={entry.data.statusVariant}
+            category={entry.data.category}
+            stack={entry.data.stack}
+            link={entry.data.link}
+            linkLabel={entry.data.linkLabel}
+          />
+        ))}
+      </div>
     </div>
   </section>
 
-  <!-- Now (4.7) -->
+  <!-- ============ NOW ============ -->
   {nowEntry && (
-    <section id="now" class="px-5 py-16 md:px-24 md:py-28">
-      <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Now</span>
-      <h2 class="mt-2 font-display text-[34px] md:text-[52px]">What I'm doing</h2>
-      <dl class="mt-10 grid gap-x-10 gap-y-6 md:grid-cols-2">
+    <section id="now" class="mx-auto grid max-w-[1440px] gap-5 px-5 py-16 md:grid-cols-12 md:gap-6 md:px-24 md:py-24">
+      <div class="flex flex-col gap-4 md:col-span-4">
+        <p class="eyebrow">Now</p>
+        <h2 class="text-[34px] tracking-[-0.02em] md:text-[44px]">Where I am this month</h2>
+      </div>
+      <dl class="grid gap-4 md:col-span-8 md:grid-cols-2 md:gap-x-12 md:gap-y-8">
         {nowRows.map((row) => (
-          <div class="border-b border-base-300 pb-4">
-            <dt class="text-sm font-bold uppercase tracking-[0.1em] text-primary">{row.label}</dt>
-            <dd class="mt-1 text-lg">{row.value}</dd>
+          <div class="flex flex-col gap-1 border-t border-base-300 pt-3.5 md:pt-4">
+            <dt class="text-[13px] font-bold text-soft md:text-sm">{row.label}</dt>
+            <dd class="text-[17px] leading-normal md:text-[19px]">{row.value}</dd>
           </div>
         ))}
       </dl>
-      <p class="mt-6 text-sm text-base-content/60">
-        Updated {nowEntry.data.updated.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}.
-      </p>
     </section>
   )}
 

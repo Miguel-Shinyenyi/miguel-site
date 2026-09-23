@@ -1,47 +1,111 @@
-// Article page interactions, per docs/redesign-spec-2026-09-23.md section
-// 4.9: the text-size join and the code sample's copy button, plus the
-// "This helped" toggle. All a few lines each, per the spec's own
-// interaction summary (section 5).
+// Article page interactions, matched against the reference implementation's
+// assets/js/main.js. Text size is CSS-only (a radio group + :has(), see
+// global.css's .prose-amwayi rules) and needs no JS at all. Copy link, copy
+// code, "This helped" and the contents scroll-highlight do.
 
+function copy(text) {
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'absolute';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+  } catch {
+    // Nothing to fall back to; the button just won't show "copied".
+  }
+  document.body.removeChild(ta);
+  return Promise.resolve();
+}
+
+// ---------- code blocks: wrap shiki's output in a header bar + Copy ----------
 document.querySelectorAll('.article-body pre.astro-code').forEach((pre) => {
   const wrapper = document.createElement('div');
-  wrapper.className = 'code-panel';
+  wrapper.className = 'code-panel sticker';
   pre.parentNode?.insertBefore(wrapper, pre);
-  wrapper.appendChild(pre);
+
+  const header = document.createElement('div');
+  header.className = 'code-panel-header';
+  const lang = document.createElement('span');
+  lang.textContent = pre.dataset.language || 'code';
+  header.appendChild(lang);
 
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.className = 'copy-code-btn btn btn-xs';
+  btn.className = 'btn btn-ghost btn-xs rounded-full border-[#4A5650] font-sans text-[#F3EEE3]';
   btn.textContent = 'Copy';
-  btn.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(pre.textContent ?? '');
+  btn.addEventListener('click', () => {
+    copy(pre.innerText).then(() => {
       btn.textContent = 'Copied';
       setTimeout(() => {
         btn.textContent = 'Copy';
-      }, 1500);
-    } catch {
-      // Clipboard API unavailable; nothing to do but leave the button as is.
-    }
-  });
-  wrapper.appendChild(btn);
-});
-
-const sizeButtons = document.querySelectorAll('.text-size-btn');
-const article = document.querySelector('.article-body');
-if (article && sizeButtons.length) {
-  sizeButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      sizeButtons.forEach((b) => b.classList.remove('btn-active'));
-      btn.classList.add('btn-active');
-      article.setAttribute('data-text-size', btn.dataset.size ?? 'md');
+      }, 2000);
     });
   });
-}
+  header.appendChild(btn);
 
-const helpedBtn = document.querySelector('.this-helped-btn');
-if (helpedBtn) {
-  helpedBtn.addEventListener('click', () => {
-    helpedBtn.classList.toggle('btn-active');
+  wrapper.appendChild(header);
+  wrapper.appendChild(pre);
+});
+
+// ---------- copy link ----------
+const linkStatus = document.querySelector('[data-copy-status]');
+document.querySelectorAll('[data-copy-link]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    copy(location.href.split('#')[0]).then(() => {
+      const label = btn.querySelector('[data-copy-label]');
+      if (label) label.textContent = 'Link copied';
+      if (linkStatus) linkStatus.classList.remove('hidden');
+      setTimeout(() => {
+        if (label) label.textContent = 'Copy link';
+        if (linkStatus) linkStatus.classList.add('hidden');
+      }, 2500);
+    });
+  });
+});
+
+// ---------- "This helped" (can appear twice: sidebar + inline on phone) ----------
+document.querySelectorAll('[data-helped]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const on = btn.getAttribute('aria-pressed') !== 'true';
+    document.querySelectorAll('[data-helped]').forEach((b) => {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const l = b.querySelector('[data-helped-label]');
+      if (l) l.textContent = on ? 'Thanks noted' : 'This helped';
+    });
+  });
+});
+
+// ---------- highlight the section currently being read ----------
+const tocLinks = document.querySelectorAll('[data-toc] a');
+if (tocLinks.length && 'IntersectionObserver' in window) {
+  const headings = Array.from(document.querySelectorAll('[data-toc]')[0].querySelectorAll('a'))
+    .map((a) => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+  function setActive(id) {
+    tocLinks.forEach((a) => {
+      a.setAttribute('aria-current', a.getAttribute('href') === `#${id}` ? 'true' : 'false');
+    });
+  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) setActive(entry.target.id);
+      });
+    },
+    { rootMargin: '-20% 0px -70% 0px' },
+  );
+  headings.forEach((h) => observer.observe(h));
+  if (headings[0]) setActive(headings[0].id);
+
+  tocLinks.forEach((a) => {
+    a.addEventListener('click', () => {
+      const d = a.closest('details');
+      if (d) d.removeAttribute('open');
+    });
   });
 }

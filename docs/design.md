@@ -19,10 +19,15 @@ Core idea below, does not change; the visual system expressing it does, complete
 
 Sections below describe the new direction at the level this document has always worked at:
 principles and decisions, not a component-by-component build spec. The full markup, daisyUI
-component choices, and code samples live in `redesign-spec-2026-09-23.md` itself, which is
-the actual source of truth Claude Code builds from; this file records what it means, why it
-was chosen, where it conflicts with anything decided here before, and how it meshes with the
-site's real existing content rather than an idealized version of it.
+component choices, and code samples originally lived in `redesign-spec-2026-09-23.md`; once
+built and seen live, Miguel found real inconsistencies against the actual reference design
+and supplied the real static reference implementation it was built from
+(`~/Downloads/amwayi-site`: `index.html`, `article.html`, `assets/js/main.js`,
+`src/input.css`), which is now the actual source of truth Claude Code builds from and
+reconciles against, superseding the spec document's own rougher markup samples where they
+disagree. This file records what it means, why it was chosen, where it conflicts with
+anything decided here before, and how it meshes with the site's real existing content rather
+than an idealized version of it.
 
 ## The core idea
 
@@ -192,28 +197,31 @@ checking claims against the rendered result rather than the code.
 | 2026-09-23 | `mockup-code`'s terminal-panel look is approximated with hand CSS on shiki's existing `pre.astro-code` output (a `.code-panel` wrapper, shiki's own CSS variables remapped onto the neutral/neutral-content theme tokens) plus a small client-side script that wraps each code block and injects a Copy button, rather than a literal daisyUI `mockup-code` markup transform | Restructuring shiki's markdown-rendered output into daisyUI's exact `mockup-code` DOM shape would need a custom rehype plugin; this gets the same dark terminal-panel read and a working copy button without that added build-pipeline complexity |
 | 2026-09-23 | Article template ships without a table of contents, callouts, takeaways, or a per-article illustration for any *existing* article; TOC renders conditionally from real `##` headings (none of the current articles have any), and callouts/takeaways aren't retrofitted into prose that was never written with them | None of the current articles have H2 headings, callout blocks, or a numbered-takeaways structure in their source; inventing that structure to fill out the template would mean writing new prose that isn't in the original piece, the same "don't invent sample content" standard already applied to the writing tabs. The illustration is explicitly optional per the brief |
 | 2026-09-23 | Found and fixed three real bugs while building this, by looking at rendered output and computed styles, not by reading the CSS: (1) the spec's own `pasture`/`nightwatch` theme blocks never define `--border`/`--depth`/`--noise`, which several daisyUI components (e.g. `.badge`'s `border: var(--border) solid ...`) reference with no fallback, silently invalidating the whole `border` shorthand and dropping badge outlines entirely; (2) with Preflight off, an unlayered `a { color: inherit }` reset beat every layered daisyUI component rule regardless of CSS specificity (cascade layers rank layered rules below unlayered ones unconditionally), making `.btn-neutral`'s text invisible; fixed by scoping resets to specific non-conflicting selectors instead of a blanket element selector, not by re-enabling Preflight; (3) the article template's body grid column needed `min-w-0`, the same root-cause class (a grid track with no containment floor) as the mobile bug this project already fixed once in the previous revision | Each was caught by actually rendering the page and inspecting computed styles or measured overflow, the same discipline this log has held to since the first mobile-bug pass, not by assuming the spec's CSS or Tailwind's defaults would just work |
+| 2026-09-23 | Miguel supplied two further reference artifacts and asked for the live site reconciled against them: a self-unpacking canvas-mockup export (`Amwayi Portfolio.html`) and, once that proved hard to inspect precisely, a real static HTML/CSS/JS implementation (`~/Downloads/amwayi-site`: `index.html`, `article.html`, `assets/js/main.js`, `src/input.css`) built from the same spec. The second one became the authoritative source of truth for exact copy, markup, and CSS, superseding both the rougher spec markup samples and this project's own first-pass interpretation of them | The static implementation is unambiguous, real, runnable code, a stronger source than either a rendered mockup export (hard to inspect pixel-by-pixel) or the spec's own illustrative-only samples; reconciling against it directly, rather than re-guessing from a screenshot, is what actually resolves "a lot of inconsistencies" rather than trading one set of guesses for another |
+| 2026-09-23 | Rewrote to match the reference closely: exact hero/pillar/hub/writing/projects/now copy and headings (e.g. "I tend what I learn and put it to work.", "The journal sits at the center.", "Recent articles", "What I'm building", "Where I am this month"); the exact shepherd SVG illustration (previously a rougher redrawn approximation); pillar icon stickers per pillar; the shared "In practice" line moved out of per-card collapse content into one box below the grid, shown/hidden via a `#pillars:has(input[value="N"]:checked)` pattern instead of `aria-label`-keyed selectors; the hub diagram's dark node-circle styling and `:has()` selectors keyed the same way; a homepage-vs-inner-page navbar split (Philosophy/Writing/Projects/Now anchors on the homepage, a simpler Home/Articles/Projects nav plus a mobile back-arrow on articles/projects/listings, matching the reference's article.html exactly); the article sidebar's CSS-only text-size radio group (dropped the JS-driven S/M/L buttons entirely); separate Copy-link and This-helped controls with the reference's own icons and `data-*` hooks; and the footer's "Read along as I learn." heading, side-by-side layout, and all five social links (Hashnode/GitHub/LinkedIn/dev.to/Medium) with the reference's own `href="#"` placeholders for the four that don't have real accounts yet, reversing the previous call to omit them outright | The reference's own footer literally ships with `href="#"` placeholders and a README step "Add your ... URLs before you go live", which settles the ambiguity the previous revision's GitHub-only call was guessing at: showing the intended final link set with honest placeholders, not hiding it, is what this specific reference does, and it's now unambiguous ground truth rather than a guess |
+| 2026-09-23 | Kept, not reconciled to the reference: real content everywhere the reference used sample placeholders (writing tab entries, dates, read times), UMWAYI in the projects grid already matched, the homepage's live open-questions feature (not present in the reference at all, since it doesn't model that integration), Giscus/Waline comments on article pages (same reason), and routine-machine's precise "Phase 3 of 4, built and verified" status text over the reference's generic "In progress" (its own `linkLabel`, "Follow the build", was adopted since that's just phrasing, not a factual precision question) | The reference is a static mockup with invented sample content by design (its own README says "Replace the sample article titles..."); real data and a real, already-working feature this project built and verified twice take precedence over matching placeholder text, the same standard applied when the spec first arrived |
+| 2026-09-23 | Found and fixed two more real bugs surfaced only by this reconciliation pass, again by rendering and inspecting, not by reading the CSS: (1) an unlayered `svg { display: block }` reset was beating Tailwind's layered `.hidden` utility on the theme-toggle's moon/sun icon pair, the same cascade-layers class of bug as the earlier button-text and badge-outline fixes, showing both icons at once regardless of theme; fixed by excluding `.hidden` from the reset's selector rather than reaching for `!important`; (2) `<fieldset>` (the pillar radio group) carries a browser-default border/padding Preflight normally strips, drawing a visible box around the whole pillar grid with Preflight off; fixed with an explicit small reset | Both were only visible in an actual screenshot, not in the source; this is now the fourth distinct instance of the same "Preflight is off, and something assumed it wasn't" bug class across the two revisions built on this stack, worth naming as a standing risk for anything touched later |
 
 ## Open questions
 
 - ~~Whether the two-typeface contrast holds up on mobile~~ Answered 2026-09-22, reconfirmed
-  2026-09-23 against the fully rebuilt layout: `npm run check:mobile` clean across all 13
-  pages against a production build, including one real regression (the article body grid
-  needed `min-w-0`, same bug class as before) found and fixed during this same revision, not
-  assumed carried over from the old fix.
+  2026-09-23 twice: once against the fully rebuilt layout (one real regression, the article
+  body grid needing `min-w-0`, found and fixed), and again after reconciling against the real
+  reference implementation, `npm run check:mobile` clean across all 14 pages against a
+  production build both times, not assumed carried over from the earlier fix.
 - ~~Whether the homepage's real open-questions feature has a place in the new layout~~
   Answered 2026-09-23: kept, placed inside the hub-explorer band; see the decisions log.
-- Whether the fully illustrated shepherd (crook, shuka, sheep) reads as specific to this site
-  once actually built and seen, the way the previous mascot's cursor-glyph staff was built to,
-  or reads as more generic pastoral illustration. Built and screenshotted in both themes and
-  at mobile width; reads intentional from this end, but Miguel's own reaction to the live
-  version, not this document, is what actually settles it, same as every mascot decision on
-  this project so far.
+- ~~Whether the fully illustrated shepherd reads as specific to this site or as generic
+  pastoral illustration~~ Superseded 2026-09-23: the site now uses the reference
+  implementation's own exact shepherd SVG rather than a redrawn approximation, so this is no
+  longer a question this project's own drawing choices can answer either way; Miguel already
+  supplied and asked for this specific illustration directly.
+- ~~Whether UMWAYI belongs as a third card in the projects grid~~ Answered 2026-09-23: yes,
+  the reference implementation includes it as a third card with real copy, badge, and a
+  GitHub link; adopted as given.
 - Whether collapsing the UMWAYI method's six stages into the new spec's four pillars and
   four-step hub loop loses something real, or is a fair simplification for a homepage that
   was never meant to carry the method's full detail.
-- Whether UMWAYI itself belongs as a third card in the projects grid alongside settlement-
-  engine and routine-machine, given it's a documentation system rather than a built
-  application, a genuinely different kind of thing from the other two.
 - Whether the new `pasture`/`nightwatch` palette holds up for long-form essay reading once
   actually seen at essay length, since this revision, unlike 2026-09-22's, doesn't carve out
   a separately calmer palette for essay body text specifically. Screenshotted at article
@@ -222,3 +230,9 @@ checking claims against the rendered result rather than the code.
 - Whether a table of contents, callouts, takeaways, and per-article illustrations are worth
   adding to specific existing articles by hand, now that the template supports all four but
   no current article uses any of them.
+- Whether the footer's four `href="#"` placeholder links (Hashnode, LinkedIn, dev.to,
+  Medium) are the right call for a real deployed site before those accounts exist, versus
+  the previous revision's choice to omit them outright. Matches the reference implementation
+  exactly and its README treats filling them in as a real before-you-go-live step, but a
+  live site shipping dead links is a genuine product tradeoff worth Miguel's own call, not
+  just a design-fidelity one.

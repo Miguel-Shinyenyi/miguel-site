@@ -16,7 +16,13 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 ---
-<BaseLayout title={`${entry.data.title} — Amwayi`}>
+<BaseLayout
+  title={`${entry.data.title} — Amwayi`}
+  variant="inner"
+  simpleFooter
+  backHref={`${withBase('/')}#projects`}
+  backLabel="Back to all projects"
+>
   <article class="mx-auto max-w-3xl px-5 py-12 md:px-24 md:py-20">
     <div class="breadcrumbs text-sm">
       <ul>

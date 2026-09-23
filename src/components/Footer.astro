@@ -1,29 +1,75 @@
 ---
-// docs/redesign-spec-2026-09-23.md section 4.8. Global (every page), not
-// just the homepage, matching how a footer normally works on a multi-page
-// site. Social links: GitHub only, per docs/design.md's meshing note,
-// Hashnode/LinkedIn/dev.to/Medium accounts don't exist yet, so they're
-// left out entirely rather than linked and broken.
+// Matched against the reference implementation's footer
+// (~/Downloads/amwayi-site/index.html and article.html): the full
+// subscribe footer is homepage-only there, inner pages (articles,
+// projects, listings) get a reduced variant, copyright plus one
+// contextual link, no subscribe form. Global (every page gets *a*
+// footer), not just the homepage, since a footer that disappears
+// entirely on every article would be a real regression.
+//
+// Social links: the reference's own footer links Hashnode, LinkedIn,
+// dev.to and Medium with a literal href="#" placeholder (its own
+// README says "Add your ... URLs" as a before-you-go-live step), so this
+// keeps that placeholder pattern rather than omitting the links outright.
+import { withBase } from '../lib/url';
+
+interface Props {
+  simple?: boolean;
+  backHref?: string;
+  backLabel?: string;
+}
+const { simple = false, backHref = withBase('/'), backLabel = 'Back to home' } = Astro.props;
+
+const socialLinks = [
+  { label: 'Hashnode', href: '#' },
+  { label: 'GitHub', href: 'https://github.com/Miguel-Shinyenyi' },
+  { label: 'LinkedIn', href: '#' },
+  { label: 'dev.to', href: '#' },
+  { label: 'Medium', href: '#' },
+];
 ---
-<footer id="footer" class="footer bg-neutral px-5 py-16 text-neutral-content md:px-24">
-  <form id="subscribe" class="w-full max-w-md" novalidate>
-    <label for="email" class="label font-bold">Email address</label>
-    <div class="join w-full flex-col gap-2 md:flex-row md:gap-0">
-      <input
-        id="email"
-        name="email"
-        type="email"
-        required
-        class="input join-item w-full rounded-full text-neutral"
-        placeholder="you@example.com"
-      />
-      <button class="btn btn-accent join-item rounded-full">Subscribe</button>
+{simple ? (
+  <footer class="bg-neutral text-[#A9B0A7]">
+    <div class="mx-auto flex max-w-[1440px] flex-col-reverse gap-2 px-5 py-8 text-sm md:flex-row md:items-center md:justify-between md:px-24 md:py-10 md:text-[15px]">
+      <span>© 2026 Amwayi</span>
+      <a href={backHref} class="py-3 text-base font-bold text-ochre-light hover:underline">{backLabel}</a>
     </div>
-    <div id="ok" role="status" class="alert alert-success mt-3 hidden">Thanks. You'll get the next article.</div>
-    <div id="err" role="alert" class="alert alert-error mt-3 hidden">That email doesn't look right. Check it and try again.</div>
-  </form>
-  <nav class="flex flex-wrap gap-6 font-bold">
-    <a class="link link-accent" href="https://github.com/Miguel-Shinyenyi">GitHub</a>
-  </nav>
-</footer>
-<script src="../scripts/subscribe.js"></script>
+  </footer>
+) : (
+  <footer class="bg-neutral text-neutral-content">
+    <div class="mx-auto flex max-w-[1440px] flex-col gap-10 px-5 pb-8 pt-16 md:gap-12 md:px-24 md:pb-12 md:pt-24">
+      <div class="grid gap-8 md:grid-cols-2 md:items-end md:gap-20">
+        <div class="flex flex-col gap-4 md:gap-5">
+          <h2 class="text-[34px] leading-[1.08] tracking-[-0.02em] md:text-[52px]">Read along as I learn.</h2>
+          <p class="text-[17px] leading-relaxed text-[#C9CEC6] md:text-[19px]">One email when a new article goes out. No noise.</p>
+        </div>
+        <form id="subscribe" class="flex flex-col gap-3" novalidate>
+          <label for="email" class="text-sm font-bold text-[#C9CEC6] md:text-[15px]">Email address</label>
+          <div class="join join-vertical w-full gap-2.5 md:join-horizontal md:gap-0">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              placeholder="you@example.com"
+              autocomplete="email"
+              class="input join-item input-lg w-full rounded-full border-[#F3EEE3] bg-[#F3EEE3] text-ink md:rounded-r-none"
+            />
+            <button class="btn btn-accent btn-lg join-item rounded-full md:rounded-l-none md:px-7">Subscribe</button>
+          </div>
+          <div id="subscribe-ok" role="status" class="alert alert-success hidden">Thanks. You'll get the next article.</div>
+          <div id="subscribe-err" role="alert" class="alert alert-error hidden">That email doesn't look right. Check it and try again.</div>
+        </form>
+      </div>
+      <div class="flex flex-col-reverse gap-4 border-t border-[#3A443E] pt-6 text-sm text-[#A9B0A7] md:flex-row md:items-center md:justify-between md:text-[15px]">
+        <span>© 2026 Amwayi</span>
+        <nav aria-label="Elsewhere" class="grid grid-cols-2 gap-x-7 gap-y-1 text-base font-bold md:flex">
+          {socialLinks.map((link) => (
+            <a href={link.href} class="py-3 text-ochre-light hover:underline">{link.label}</a>
+          ))}
+        </nav>
+      </div>
+    </div>
+  </footer>
+)}
+{!simple && <script src="../scripts/subscribe.js"></script>}

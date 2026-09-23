@@ -1,5 +1,7 @@
 /* Base reset. Preflight is off (src/styles/tailwind.css), so this file
-   owns whatever base normalization the new design still needs.
+   owns whatever base normalization the new design still needs, matched
+   against the reference implementation's src/input.css
+   (~/Downloads/amwayi-site) where it has an equivalent rule.
 
    No blanket `a { color: inherit }` here: skipping tailwindcss/preflight
    (to keep Preflight off) means this file is the first place a "base"
@@ -16,14 +18,48 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
 }
 
-img,
-svg {
+/* fieldset (the pillars radio group) carries a browser-default border,
+   padding and min-width that Preflight normally resets; without it the
+   fieldset drew a visible box around the whole pillar grid. */
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+/* :not(.hidden): this is unlayered, so (same cascade-layers reason as the
+   button/badge fixes elsewhere in this file) it would otherwise beat
+   Tailwind's own layered .hidden utility on svg icons like the theme
+   toggle's moon/sun pair, showing both at once regardless of state. */
+img:not(.hidden),
+svg:not(.hidden) {
   display: block;
   max-width: 100%;
+}
+
+:target {
+  scroll-margin-top: 6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 /* daisyUI assumes Preflight's own text-decoration reset is present; since
@@ -42,24 +78,140 @@ svg {
 .navbar a,
 .menu a,
 .breadcrumbs a,
-a.card {
+a.card,
+.row-link {
   color: inherit;
   text-decoration: none;
 }
 
+/* ---- small text utilities the reference keeps as named tokens rather
+   than inline hex, reused the same way here ---- */
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-primary);
+}
+@media (min-width: 768px) {
+  .eyebrow {
+    font-size: 0.875rem;
+  }
+}
+
+.text-muted {
+  color: var(--muted);
+}
+.text-soft {
+  color: var(--soft);
+}
+
+/* PostHog-style sticker look: bold outline plus a hard offset shadow,
+   used for illustration panels, code blocks, callouts and cards. */
+.sticker {
+  border: 2px solid var(--color-ink);
+  box-shadow: 5px 5px 0 var(--color-ink);
+}
+.sticker-sm {
+  border: 2px solid var(--color-ink);
+  box-shadow: 3px 3px 0 var(--color-ink);
+}
+
+/* ---- pillars: radio cards. The checked card turns dark, and one shared
+   "in practice" line below the grid shows the matching pillar's text.
+   #pillars wraps the whole block (fieldset + practice box). ---- */
+
+.pillar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-radius: var(--radius-box);
+  background: var(--color-base-100);
+  padding: 1.5rem;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+@media (min-width: 768px) {
+  .pillar {
+    gap: 1rem;
+    padding: 2rem;
+  }
+}
+.pillar:has(input:checked) {
+  background: var(--color-neutral);
+  color: var(--color-neutral-content);
+}
+.pillar:has(input:checked) .pillar-body {
+  color: #c9cec6;
+}
+.pillar:has(input:checked) .pillar-num {
+  color: var(--color-ochre-light);
+}
+.pillar:has(input:focus-visible) {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.practice {
+  display: none;
+}
+#pillars:has(input[value='1']:checked) .practice-1,
+#pillars:has(input[value='2']:checked) .practice-2,
+#pillars:has(input[value='3']:checked) .practice-3,
+#pillars:has(input[value='4']:checked) .practice-4 {
+  display: block;
+}
+
+/* ---- hub explorer: light up the SVG node matching the checked tab.
+   #hub is the whole section; .hub-node/.node-X live on the SVG <g>. ---- */
+
+.hub-node circle {
+  fill: #2a332e;
+  stroke: #4a5650;
+  transition: fill 0.2s;
+}
+.hub-node text {
+  fill: #f3eee3;
+}
+#hub:has(input[value='journal']:checked) .node-journal circle,
+#hub:has(input[value='philosophy']:checked) .node-philosophy circle,
+#hub:has(input[value='tech']:checked) .node-tech circle,
+#hub:has(input[value='people']:checked) .node-people circle,
+#hub:has(input[value='projects']:checked) .node-projects circle {
+  fill: var(--color-ochre-light);
+  stroke: var(--color-ochre-light);
+}
+#hub:has(input[value='journal']:checked) .node-journal text,
+#hub:has(input[value='philosophy']:checked) .node-philosophy text,
+#hub:has(input[value='tech']:checked) .node-tech text,
+#hub:has(input[value='people']:checked) .node-people text,
+#hub:has(input[value='projects']:checked) .node-projects text {
+  fill: #1d2420;
+}
+
 /* ---- shiki code blocks, mapped onto the neutral (dark) daisyUI tokens so
    a code sample reads like a dark terminal panel regardless of the active
-   theme, per docs/redesign-spec-2026-09-23.md section 4.9's mockup-code
-   direction. A literal daisyUI `mockup-code` remap of shiki's own output
-   would need a custom rehype plugin; this gets the same terminal-panel
-   read with plain CSS on shiki's existing markup instead (see
-   docs/design.md's decisions log for why). ---- */
+   theme, matching the reference's own dark code panel. A literal daisyUI
+   `mockup-code` remap of shiki's own output would need a custom rehype
+   plugin; this gets the same terminal-panel read with plain CSS on
+   shiki's existing markup instead (see docs/design.md's decisions log). */
 
 .code-panel {
-  position: relative;
   margin: 1.75rem 0;
-  border-radius: var(--radius-box, 1.25rem);
-  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.code-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 1rem 0.4rem 1.25rem;
+  background: #2a332e;
+  color: var(--color-neutral-content);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
 }
 
 .code-panel pre.astro-code {
@@ -68,150 +220,136 @@ a.card {
   border-radius: 0;
 }
 
-.code-panel .copy-code-btn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-}
-
 pre.astro-code {
-  font-family: 'Karla', monospace;
+  font-family: var(--font-mono);
   font-size: 0.9rem;
-  line-height: 1.6;
-  padding: 1.5rem;
+  line-height: 1.7;
+  padding: 1.25rem 1.5rem;
   overflow-x: auto;
 
-  --astro-code-color-background: var(--color-neutral);
+  --astro-code-color-background: var(--color-ink);
   --astro-code-color-text: var(--color-neutral-content);
   --astro-code-token-comment: color-mix(in srgb, var(--color-neutral-content) 60%, transparent);
   --astro-code-token-string: var(--color-secondary);
   --astro-code-token-string-expression: var(--color-secondary);
   --astro-code-token-punctuation: var(--color-neutral-content);
-  --astro-code-token-keyword: var(--color-primary);
+  --astro-code-token-keyword: var(--color-ochre-light);
   --astro-code-token-function: var(--color-accent);
   --astro-code-token-constant: var(--color-accent);
   --astro-code-token-parameter: var(--color-neutral-content);
   --astro-code-token-link: var(--color-neutral-content);
 }
 
-/* ---- article body: the one surface markdown renders into directly, so
+/* ---- prose-amwayi: the one surface markdown renders into directly, so
    Tailwind utility classes can't reach it without a rehype plugin. Fraunces
-   for headings, Karla for body text, per
-   docs/redesign-spec-2026-09-23.md section 3. ---- */
+   for headings, Karla for body text. Text size is CSS-only, set by a radio
+   group in the sidebar (#size-s/#size-m/#size-l), matching the reference,
+   no JS needed for this control. ---- */
 
-.article-body {
+.prose-amwayi {
+  --fs: 17px;
   font-family: var(--font-sans);
-  font-size: 1.0625rem;
-  line-height: 1.75;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
-.article-body[data-text-size='sm'] {
-  font-size: 15px;
+/* The markdown Content component renders into this wrapper div rather
+   than directly as .prose-amwayi's children (so the component stays a
+   clean injection point); display:contents removes it from the box model
+   so its paragraphs/headings still act as direct flex children and get
+   .prose-amwayi's own gap rhythm, matching the reference exactly. */
+.article-body {
+  display: contents;
 }
-.article-body[data-text-size='md'] {
-  font-size: 17px;
-}
-.article-body[data-text-size='lg'] {
-  font-size: 19px;
-}
-
 @media (min-width: 768px) {
-  .article-body[data-text-size='sm'] {
-    font-size: 17px;
+  .prose-amwayi {
+    --fs: 19px;
+    gap: 26px;
   }
-  .article-body[data-text-size='md'] {
-    font-size: 19px;
+}
+body:has(#size-s:checked) .prose-amwayi {
+  --fs: 15px;
+}
+body:has(#size-l:checked) .prose-amwayi {
+  --fs: 21px;
+}
+@media (min-width: 768px) {
+  body:has(#size-s:checked) .prose-amwayi {
+    --fs: 17px;
   }
-  .article-body[data-text-size='lg'] {
-    font-size: 21px;
+  body:has(#size-l:checked) .prose-amwayi {
+    --fs: 21px;
   }
 }
 
-.article-body h1,
-.article-body h2,
-.article-body h3,
-.article-body h4 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1.2;
-  margin: 2em 0 0.6em;
+.prose-amwayi p,
+.prose-amwayi li {
+  font-size: var(--fs);
+  line-height: 1.75;
+  margin: 0;
 }
-
-.article-body h1 {
-  font-size: 2rem;
-}
-.article-body h2 {
-  font-size: 1.6rem;
-}
-.article-body h3 {
-  font-size: 1.3rem;
-}
-
-.article-body p,
-.article-body ul,
-.article-body ol {
-  margin: 0 0 1.25em;
+.prose-amwayi ul,
+.prose-amwayi ol {
   max-width: 68ch;
+  padding-left: 1.25em;
 }
-
-.article-body a {
+.prose-amwayi .lead {
+  font-family: var(--font-display);
+  font-size: calc(var(--fs) + 4px);
+  line-height: 1.55;
+}
+.prose-amwayi h2 {
+  font-family: var(--font-display);
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin-top: 1.5rem;
+}
+@media (min-width: 768px) {
+  .prose-amwayi h2 {
+    font-size: 2.25rem;
+  }
+}
+.prose-amwayi h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.prose-amwayi a {
   color: var(--color-primary);
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
-
-.article-body code:not(pre code) {
-  font-family: 'Karla', monospace;
+.prose-amwayi code:not(pre code) {
+  font-family: var(--font-mono);
   font-size: 0.9em;
   background: var(--color-base-300);
   padding: 0.15em 0.4em;
   border-radius: 0.35em;
 }
-
-.article-body blockquote {
-  margin: 2em 0;
-  padding: 1.25em 0;
-  border-top: 2px solid var(--color-base-300);
-  border-bottom: 2px solid var(--color-base-300);
+.prose-amwayi blockquote {
+  margin: 0.5rem 0;
+  padding: 1.5rem 0;
+  border-top: 2px solid var(--color-base-content);
+  border-bottom: 2px solid var(--color-base-content);
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 1.2em;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  text-align: center;
+}
+@media (min-width: 768px) {
+  .prose-amwayi blockquote {
+    font-size: 2rem;
+  }
 }
 
-/* ---- hub explorer: light up the SVG node matching the checked tab,
-   per docs/redesign-spec-2026-09-23.md section 4.4. This can't be a
-   Tailwind arbitrary-variant class since it targets a different element
-   (the SVG node) than the one being matched (the tab input). ---- */
-
-#hub-section:has(#hub input[aria-label='Journal']:checked) #node-journal circle {
-  fill: var(--color-accent);
-}
-#hub-section:has(#hub input[aria-label='Journal']:checked) #node-journal text {
-  fill: var(--color-accent-content);
-}
-#hub-section:has(#hub input[aria-label='Philosophy']:checked) #node-philosophy circle {
-  fill: var(--color-accent);
-}
-#hub-section:has(#hub input[aria-label='Philosophy']:checked) #node-philosophy text {
-  fill: var(--color-accent-content);
-}
-#hub-section:has(#hub input[aria-label='Tech']:checked) #node-tech circle {
-  fill: var(--color-accent);
-}
-#hub-section:has(#hub input[aria-label='Tech']:checked) #node-tech text {
-  fill: var(--color-accent-content);
-}
-#hub-section:has(#hub input[aria-label='People']:checked) #node-people circle {
-  fill: var(--color-accent);
-}
-#hub-section:has(#hub input[aria-label='People']:checked) #node-people text {
-  fill: var(--color-accent-content);
-}
-#hub-section:has(#hub input[aria-label='Projects']:checked) #node-projects circle {
-  fill: var(--color-accent);
-}
-#hub-section:has(#hub input[aria-label='Projects']:checked) #node-projects text {
-  fill: var(--color-accent-content);
+.toc-link[aria-current='true'] {
+  background: var(--color-base-300);
+  font-weight: 700;
 }
 
 /* ---- comments (giscus / waline), carried forward from the previous

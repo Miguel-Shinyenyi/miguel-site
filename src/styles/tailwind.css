@@ -1,21 +1,18 @@
-/* Tailwind 4 / daisyUI 5 (docs/design.md, Color section, 2026-09-23).
+/* Tailwind 4 / daisyUI 5, matched against the real reference implementation
+   at ~/Downloads/amwayi-site (src/input.css), not just
+   docs/redesign-spec-2026-09-23.md's markup samples.
 
    Preflight is skipped on purpose: importing "tailwindcss" as a single
-   import (as the spec's own app.css does) pulls in Preflight's base reset,
-   which would fight global.css's own hand-written base styles. Tailwind 4's
-   documented way to opt out is importing the theme and utilities layers
-   individually instead of the combined import. */
+   import pulls in Preflight's base reset, which would fight global.css's
+   own hand-written base styles. Tailwind 4's documented way to opt out is
+   importing the theme and utilities layers individually instead of the
+   combined import. */
 @import 'tailwindcss/theme' layer(theme);
 @import 'tailwindcss/utilities' layer(utilities);
 
 @plugin 'daisyui' {
   themes: pasture --default, nightwatch --prefersdark;
 }
-
-/* pasture: light. nightwatch: dark. Values from
-   docs/redesign-spec-2026-09-23.md section 3, used as given, docs/design.md
-   already settled that against the site's previous rust-orange accent this
-   replaces entirely rather than reconciling the two palettes. */
 
 @plugin 'daisyui/theme' {
   name: 'pasture';
@@ -33,19 +30,19 @@
   --color-accent-content: #1d2420;
   --color-neutral: #1d2420;
   --color-neutral-content: #f3eee3;
+  --color-info: #2f5d7c;
+  --color-info-content: #ffffff;
   --color-success: #3f5a3c;
+  --color-success-content: #f3eee3;
+  --color-warning: #c08a3e;
+  --color-warning-content: #1d2420;
   --color-error: #b23a2e;
+  --color-error-content: #ffffff;
   --radius-box: 1.25rem;
   --radius-field: 999px;
   --radius-selector: 999px;
-  /* The spec's own theme block omits these; daisyUI 5's component CSS
-     references var(--border)/--depth/--noise with no fallback (e.g.
-     .badge's `border: var(--border) solid ...`), so leaving them
-     undefined makes the whole shorthand invalid and drops the border
-     entirely. Found by checking a rendered badge's computed style, not
-     assumed from the spec or the CSS source. */
-  --border: 1px;
-  --depth: 1;
+  --border: 1.5px;
+  --depth: 0;
   --noise: 0;
 }
 
@@ -64,19 +61,51 @@
   --color-accent-content: #141a17;
   --color-neutral: #0e1310;
   --color-neutral-content: #f3eee3;
+  --color-info: #8eb8d6;
+  --color-info-content: #141a17;
   --color-success: #9cc39a;
+  --color-success-content: #141a17;
+  --color-warning: #e0a965;
+  --color-warning-content: #141a17;
   --color-error: #e07a6f;
+  --color-error-content: #141a17;
   --radius-box: 1.25rem;
   --radius-field: 999px;
   --radius-selector: 999px;
-  --border: 1px;
-  --depth: 1;
+  --border: 1.5px;
+  --depth: 0;
   --noise: 0;
 }
 
 @theme {
   --font-display: 'Fraunces', Georgia, serif;
-  --font-sans: 'Karla', 'Helvetica Neue', sans-serif;
+  --font-sans: 'Karla', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-ink: #1d2420;
+  --color-ochre: #9a5b1e;
+  --color-ochre-light: #e0a965;
+  --color-pasture: #3f5a3c;
+  --color-shuka: #b23a2e;
+}
+
+/* Scene colors (hero/article illustration backgrounds) that follow the
+   active theme, same tokens as the reference's src/input.css. */
+:root,
+[data-theme='pasture'] {
+  --hill-1: #dce3d2;
+  --hill-2: #c4d1ba;
+  --sun: #e8d6b8;
+  --note: #e3ecdd;
+  --muted: #4e554f;
+  --soft: #5b615b;
+}
+[data-theme='nightwatch'] {
+  --hill-1: #24302a;
+  --hill-2: #2d3b33;
+  --sun: #d9d2bf;
+  --note: #243328;
+  --muted: #b8beb4;
+  --soft: #a3aa9f;
 }
 
 :root {

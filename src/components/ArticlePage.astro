@@ -1,6 +1,8 @@
 ---
-// Shared article template, docs/redesign-spec-2026-09-23.md section 4.9,
-// used by the philosophy/tech/journal [slug] pages.
+// Shared article template, matched against the reference implementation's
+// article.html (~/Downloads/amwayi-site) rather than just
+// docs/redesign-spec-2026-09-23.md's rougher samples. Used by the
+// philosophy/tech/journal [slug] pages.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Giscus from './Giscus.astro';
 import Waline from './Waline.astro';
@@ -18,7 +20,8 @@ const { entry, section, sectionLabel } = Astro.props;
 const { Content, headings } = await entry.render();
 const toc = headings.filter((h) => h.depth === 2);
 
-const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+const fmtShort = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+const fmtLong = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
 // readTime is computed from real word count, not authored front matter
 // (docs/design.md's meshing note), ~215 words per minute, a clearly
@@ -26,100 +29,187 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
 const wordCount = entry.body.split(/\s+/).filter(Boolean).length;
 const readTime = Math.max(1, Math.round(wordCount / 215));
 
-const others = (await getCollection(section, ({ data, slug }) => !data.draft && slug !== entry.slug))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+// Keep reading pulls from all three writing collections, not just this
+// one, matching the reference (a Tech article suggests a Tech piece and a
+// Journal piece, not two more Tech pieces); each card carries its own
+// section as an eyebrow label since they can differ from this page's.
+const sectionLabels: Record<Section, string> = { philosophy: 'Philosophy', tech: 'Tech', journal: 'Journal' };
+const allSections: Section[] = ['philosophy', 'tech', 'journal'];
+const others = (
+  await Promise.all(
+    allSections.map(async (s) => {
+      const items = await getCollection(s, ({ data, slug }) => !data.draft && !(s === section && slug === entry.slug));
+      return items.map((item) => ({ item, section: s }));
+    }),
+  )
+)
+  .flat()
+  .sort((a, b) => b.item.data.date.valueOf() - a.item.data.date.valueOf())
   .slice(0, 2);
 ---
-<BaseLayout title={`${entry.data.title} — Amwayi`}>
-  <article class="mx-auto max-w-5xl px-5 py-12 md:px-24 md:py-20">
-    <div class="breadcrumbs text-sm">
-      <ul>
-        <li><a href={withBase('/')}>Home</a></li>
-        <li><a href={withBase(`/${section}`)}>{sectionLabel}</a></li>
-        <li>{entry.data.title}</li>
-      </ul>
-    </div>
-
-    <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">{sectionLabel}</span>
-    <h1 class="font-display text-[34px] leading-tight md:text-[52px]">{entry.data.title}</h1>
-
-    <div class="mt-3 flex flex-wrap items-center gap-3 text-sm text-base-content/70">
-      <span>{fmt(entry.data.date)}</span>
-      <span aria-hidden="true">·</span>
-      <span>{readTime} min read</span>
-      {entry.data.draft && <span class="badge badge-outline badge-primary">Draft</span>}
-      {entry.data.updated && <span>· updated {fmt(entry.data.updated)}</span>}
-    </div>
-
-    {entry.data.tags && entry.data.tags.length > 0 && (
-      <div class="mt-3 flex flex-wrap gap-2">
-        {entry.data.tags.map((tag) => <span class="badge border-0 bg-base-300">{tag}</span>)}
+<BaseLayout
+  title={`${entry.data.title} · Amwayi`}
+  variant="inner"
+  simpleFooter
+  backHref={`${withBase('/')}#writing`}
+  backLabel="Back to all articles"
+>
+  <!-- ============ TITLE ============ -->
+    <section class="mx-auto max-w-[1440px] px-5 pb-7 pt-8 md:px-24 md:pb-12 md:pt-16">
+      <div class="flex max-w-[1000px] flex-col gap-4 md:gap-6">
+        <div class="breadcrumbs py-0 text-sm font-bold text-soft md:text-[15px]">
+          <ul>
+            <li><a href={`${withBase('/')}#writing`}>Articles</a></li>
+            <li class="text-primary">{sectionLabel}</li>
+          </ul>
+        </div>
+        <h1 class="text-[38px] leading-[1.05] tracking-[-0.025em] md:text-[68px]">{entry.data.title}</h1>
+        <p class="max-w-[820px] text-lg leading-normal text-muted md:text-[23px]">{entry.data.summary}</p>
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1 md:pt-2">
+          <span class="flex items-center gap-2.5 font-bold">
+            <span class="flex size-8 items-end justify-center overflow-hidden rounded-full border-2 border-ink bg-[#7A4A2E] md:size-10" aria-hidden="true">
+              <span class="h-[30%] w-[65%] rounded-t-full bg-pasture" />
+            </span>
+            Amwayi
+          </span>
+          <span class="text-sm text-soft md:text-base">
+            {fmtShort(entry.data.date)} · {readTime} min read
+            {entry.data.draft && ' · draft'}
+            {entry.data.updated && ` · updated ${fmtLong(entry.data.updated)}`}
+          </span>
+          {entry.data.tags && entry.data.tags.length > 0 && (
+            <span class="hidden gap-2 md:flex">
+              {entry.data.tags.map((tag) => <span class="badge border-0 bg-base-300">{tag}</span>)}
+            </span>
+          )}
+        </div>
       </div>
-    )}
+    </section>
 
-    <div class="mt-10 grid gap-10 md:grid-cols-12">
-      {toc.length > 0 && (
-        <nav class="md:col-span-3" aria-label="Table of contents">
-          <div class="collapse-arrow collapse bg-base-200 md:collapse-open md:bg-transparent">
-            <input type="checkbox" class="md:hidden" />
-            <div class="collapse-title font-bold md:hidden">Contents</div>
-            <div class="collapse-content md:p-0">
-              <ul class="menu p-0 text-base-content/80">
-                {toc.map((h) => (
-                  <li><a href={`#${h.slug}`}>{h.text}</a></li>
-                ))}
-              </ul>
+    <!-- ============ BODY ============ -->
+    <div class="mx-auto grid max-w-[1440px] grid-cols-1 gap-8 px-5 pb-14 pt-7 md:grid-cols-12 md:gap-12 md:px-24 md:pb-24 md:pt-[72px]">
+      <!-- Sidebar: contents, text size, share -->
+      <aside class="min-w-0 md:col-span-3">
+        <div class="flex flex-col gap-4 md:sticky md:top-28 md:gap-8">
+          {toc.length > 0 && (
+            <>
+              <details class="collapse-arrow collapse rounded-2xl bg-base-200 md:hidden">
+                <summary class="collapse-title min-h-[52px] font-bold">On this page</summary>
+                <div class="collapse-content">
+                  <ul class="menu w-full p-0 text-base" data-toc>
+                    {toc.map((h) => (
+                      <li><a class="toc-link" href={`#${h.slug}`}>{h.text}</a></li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
+
+              <nav aria-label="On this page" class="hidden flex-col gap-1 md:flex">
+                <p class="pb-2 text-[13px] font-bold uppercase tracking-[0.14em] text-soft">On this page</p>
+                <ul class="menu w-full gap-1 p-0 text-base" data-toc>
+                  {toc.map((h) => (
+                    <li><a class="toc-link min-h-11 rounded-xl" href={`#${h.slug}`}>{h.text}</a></li>
+                  ))}
+                </ul>
+              </nav>
+            </>
+          )}
+
+          <div class="flex items-center justify-between gap-3 md:flex-col md:items-start md:justify-start">
+            <p class="hidden text-[13px] font-bold uppercase tracking-[0.14em] text-soft md:block">Text size</p>
+            <div class="join rounded-full bg-base-300 p-1" role="radiogroup" aria-label="Text size">
+              <label class="join-item flex size-11 cursor-pointer items-center justify-center rounded-full text-sm font-display has-checked:bg-base-content has-checked:text-base-100 has-focus-visible:outline-2 has-focus-visible:outline-primary">
+                <input class="sr-only" type="radio" name="size" id="size-s" />
+                <span aria-hidden="true">A</span>
+                <span class="sr-only">Small text</span>
+              </label>
+              <label class="join-item flex size-11 cursor-pointer items-center justify-center rounded-full text-lg font-display has-checked:bg-base-content has-checked:text-base-100 has-focus-visible:outline-2 has-focus-visible:outline-primary">
+                <input class="sr-only" type="radio" name="size" id="size-m" checked />
+                <span aria-hidden="true">A</span>
+                <span class="sr-only">Medium text</span>
+              </label>
+              <label class="join-item flex size-11 cursor-pointer items-center justify-center rounded-full text-[22px] font-display has-checked:bg-base-content has-checked:text-base-100 has-focus-visible:outline-2 has-focus-visible:outline-primary">
+                <input class="sr-only" type="radio" name="size" id="size-l" />
+                <span aria-hidden="true">A</span>
+                <span class="sr-only">Large text</span>
+              </label>
+            </div>
+            <div class="flex gap-2.5 md:flex-col">
+              <button type="button" class="sticker-sm btn rounded-full bg-base-200" data-copy-link aria-label="Copy link">
+                <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" /><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
+                </svg>
+                <span class="hidden md:inline" data-copy-label>Copy link</span>
+              </button>
+              <button type="button" class="sticker-sm btn hidden rounded-full bg-base-200 aria-pressed:bg-accent aria-pressed:text-accent-content md:inline-flex" data-helped aria-pressed="false">
+                <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+                </svg>
+                <span data-helped-label>This helped</span>
+              </button>
             </div>
           </div>
-        </nav>
-      )}
-
-      <div class:list={['min-w-0', toc.length > 0 ? 'md:col-span-7' : 'md:col-span-8']}>
-        <div class="join mb-8">
-          <button type="button" class="text-size-btn btn btn-sm join-item" data-size="sm">S</button>
-          <button type="button" class="text-size-btn btn btn-sm btn-active join-item" data-size="md">M</button>
-          <button type="button" class="text-size-btn btn btn-sm join-item" data-size="lg">L</button>
+          <p class="hidden text-sm font-bold text-success" role="status" data-copy-status>Link copied</p>
         </div>
+      </aside>
 
-        <div class="article-body" data-text-size="md">
+      <!-- Article -->
+      <article class="prose-amwayi min-w-0 md:col-span-8">
+        <div class="article-body">
           <Content />
         </div>
 
-        <button type="button" class="this-helped-btn btn btn-outline mt-10">This helped</button>
+        <button
+          type="button"
+          class="sticker-sm btn btn-lg mt-3 rounded-full bg-base-200 aria-pressed:bg-accent aria-pressed:text-accent-content md:hidden"
+          data-helped
+          aria-pressed="false"
+        >
+          <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+          </svg>
+          <span data-helped-label>This helped</span>
+        </button>
 
-        <div class="mt-16 shadow-[6px_6px_0_var(--color-neutral)] card bg-base-200">
-          <div class="card-body">
-            <h2 class="card-title font-display">Miguel Amwayi</h2>
-            <p class="text-base-content/80">
-              Backend engineer, based in Nairobi. Writing this down to see it more clearly, not because it's finished.
-            </p>
-            <a href={withBase('/#now')} class="link link-primary font-bold">What I'm doing now →</a>
+        <div class="sticker card card-side mt-4 items-center gap-4 rounded-[20px] bg-base-200 p-5 md:mt-8 md:gap-5 md:p-7">
+          <svg class="size-14 shrink-0 md:size-[72px]" viewBox="0 0 72 72" fill="none" aria-hidden="true">
+            <circle cx="36" cy="36" r="34" fill="#E8D6B8" stroke="#1D2420" stroke-width="3" />
+            <path d="M14 66 Q36 46 58 66" fill="#3F5A3C" stroke="#1D2420" stroke-width="3" />
+            <circle cx="36" cy="32" r="14" fill="#7A4A2E" stroke="#1D2420" stroke-width="3" />
+            <path d="M22 30 Q22 16 36 16 Q50 16 50 30 Q45 22 36 22 Q27 22 22 30 Z" fill="#1D1A17" />
+            <circle cx="31" cy="33" r="2" fill="#1D2420" /><circle cx="41" cy="33" r="2" fill="#1D2420" />
+          </svg>
+          <div class="flex flex-col gap-1">
+            <span class="font-display text-[19px] font-semibold md:text-[22px]">Written by Amwayi</span>
+            <span class="text-muted !text-[15px] leading-normal md:!text-base">Backend engineer in Nairobi. I write about philosophy, tech and journaling.</span>
           </div>
         </div>
 
-        {others.length > 0 && (
-          <div class="mt-10">
-            <h2 class="font-display text-2xl font-semibold">Keep reading</h2>
-            <div class="mt-4 grid gap-4 md:grid-cols-2">
-              {others.map((other) => (
-                <a
-                  href={withBase(`/${section}/${other.slug}`)}
-                  class="card bg-base-200 shadow-[6px_6px_0_var(--color-base-300)] transition-transform hover:-translate-y-0.5"
-                >
-                  <div class="card-body">
-                    <h3 class="card-title font-display text-xl">{other.data.title}</h3>
-                    <p class="text-sm text-base-content/70">{other.data.summary}</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
         {!entry.data.draft && <Giscus />}
         {!entry.data.draft && <Waline />}
-      </div>
+      </article>
     </div>
-  </article>
+
+    {others.length > 0 && (
+      <section class="border-t border-base-300 bg-base-200">
+        <div class="mx-auto flex max-w-[1440px] flex-col gap-4 px-5 py-14 md:gap-8 md:px-24 md:py-24">
+          <h2 class="text-[30px] tracking-[-0.02em] md:text-[44px]">Keep reading</h2>
+          <div class="grid gap-4 md:grid-cols-2 md:gap-6">
+            {others.map(({ item, section: otherSection }) => (
+              <a
+                href={withBase(`/${otherSection}/${item.slug}`)}
+                class="sticker card gap-2 rounded-[20px] bg-base-100 p-[22px] transition-transform hover:-translate-y-0.5 md:gap-3 md:p-8"
+              >
+                <span class="eyebrow">{sectionLabels[otherSection]}</span>
+                <span class="font-display text-[22px] leading-tight md:text-[28px]">{item.data.title}</span>
+                <span class="text-sm text-soft md:text-[15px]">
+                  {fmtShort(item.data.date)} · {Math.max(1, Math.round(item.body.split(/\s+/).filter(Boolean).length / 215))} min read
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
   <script src="../scripts/article-controls.js"></script>
 </BaseLayout>
