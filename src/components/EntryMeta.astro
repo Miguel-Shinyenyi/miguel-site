@@ -8,10 +8,10 @@ const { date, draft = false, updated } = Astro.props;
 
 const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
-<div class="entry-meta">
-  <span class="entry-date">{fmt(date)}</span>
-  <span class="entry-annotation">
-    <span class:list={['entry-status', { 'entry-status--draft': draft }]}>{draft ? 'draft' : 'published'}</span>
-    {updated && <span class="entry-updated">updated {fmt(updated)}</span>}
+<div class="flex flex-col gap-1.5 text-sm text-base-content/70">
+  <span class="uppercase tracking-wide">{fmt(date)}</span>
+  <span class="flex flex-wrap items-center gap-2">
+    <span class:list={['uppercase', { 'text-primary font-bold': draft }]}>{draft ? 'draft' : 'published'}</span>
+    {updated && <span>updated {fmt(updated)}</span>}
   </span>
 </div>

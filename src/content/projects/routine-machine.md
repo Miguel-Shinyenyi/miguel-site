@@ -3,6 +3,12 @@ title: "Routine Machine"
 date: 2026-09-20
 summary: "An AI project that logs daily routines and learning, detects patterns, and runs a fixed schedule through its own tracking frontend."
 draft: false
+status: "Phase 3 of 4, built and verified"
+statusVariant: primary
+category: "AI project"
+stack: ["Spring Boot", "FastAPI", "Python", "Next.js"]
+link: "/projects/routine-machine"
+linkLabel: "Read the build log"
 ---
 
 Built to solve a specific, named problem: too much to do leads to doing nothing. Rather than

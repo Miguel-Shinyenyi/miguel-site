@@ -3,6 +3,12 @@ title: "Settlement Engine"
 date: 2026-09-20
 summary: "A live, deployed idempotent settlement and reconciliation engine, all nine build phases complete."
 draft: false
+status: "Deployed to staging"
+statusVariant: success
+category: "Fintech backend"
+stack: ["Spring Boot", "PostgreSQL", "Kafka", "FastAPI", "Next.js", "Kubernetes", "OpenTelemetry"]
+link: "/projects/settlement-engine"
+linkLabel: "Read the case study"
 ---
 
 A monorepo project: Java Spring Boot for the core services, PostgreSQL for storage, Kafka for

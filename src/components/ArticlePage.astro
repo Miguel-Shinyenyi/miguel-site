@@ -1,0 +1,125 @@
+---
+// Shared article template, docs/redesign-spec-2026-09-23.md section 4.9,
+// used by the philosophy/tech/journal [slug] pages.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Giscus from './Giscus.astro';
+import Waline from './Waline.astro';
+import { withBase } from '../lib/url';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+type Section = 'philosophy' | 'tech' | 'journal';
+
+interface Props {
+  entry: CollectionEntry<Section>;
+  section: Section;
+  sectionLabel: string;
+}
+const { entry, section, sectionLabel } = Astro.props;
+const { Content, headings } = await entry.render();
+const toc = headings.filter((h) => h.depth === 2);
+
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+// readTime is computed from real word count, not authored front matter
+// (docs/design.md's meshing note), ~215 words per minute, a clearly
+// approximate estimate.
+const wordCount = entry.body.split(/\s+/).filter(Boolean).length;
+const readTime = Math.max(1, Math.round(wordCount / 215));
+
+const others = (await getCollection(section, ({ data, slug }) => !data.draft && slug !== entry.slug))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 2);
+---
+<BaseLayout title={`${entry.data.title} — Amwayi`}>
+  <article class="mx-auto max-w-5xl px-5 py-12 md:px-24 md:py-20">
+    <div class="breadcrumbs text-sm">
+      <ul>
+        <li><a href={withBase('/')}>Home</a></li>
+        <li><a href={withBase(`/${section}`)}>{sectionLabel}</a></li>
+        <li>{entry.data.title}</li>
+      </ul>
+    </div>
+
+    <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">{sectionLabel}</span>
+    <h1 class="font-display text-[34px] leading-tight md:text-[52px]">{entry.data.title}</h1>
+
+    <div class="mt-3 flex flex-wrap items-center gap-3 text-sm text-base-content/70">
+      <span>{fmt(entry.data.date)}</span>
+      <span aria-hidden="true">·</span>
+      <span>{readTime} min read</span>
+      {entry.data.draft && <span class="badge badge-outline badge-primary">Draft</span>}
+      {entry.data.updated && <span>· updated {fmt(entry.data.updated)}</span>}
+    </div>
+
+    {entry.data.tags && entry.data.tags.length > 0 && (
+      <div class="mt-3 flex flex-wrap gap-2">
+        {entry.data.tags.map((tag) => <span class="badge border-0 bg-base-300">{tag}</span>)}
+      </div>
+    )}
+
+    <div class="mt-10 grid gap-10 md:grid-cols-12">
+      {toc.length > 0 && (
+        <nav class="md:col-span-3" aria-label="Table of contents">
+          <div class="collapse-arrow collapse bg-base-200 md:collapse-open md:bg-transparent">
+            <input type="checkbox" class="md:hidden" />
+            <div class="collapse-title font-bold md:hidden">Contents</div>
+            <div class="collapse-content md:p-0">
+              <ul class="menu p-0 text-base-content/80">
+                {toc.map((h) => (
+                  <li><a href={`#${h.slug}`}>{h.text}</a></li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </nav>
+      )}
+
+      <div class:list={['min-w-0', toc.length > 0 ? 'md:col-span-7' : 'md:col-span-8']}>
+        <div class="join mb-8">
+          <button type="button" class="text-size-btn btn btn-sm join-item" data-size="sm">S</button>
+          <button type="button" class="text-size-btn btn btn-sm btn-active join-item" data-size="md">M</button>
+          <button type="button" class="text-size-btn btn btn-sm join-item" data-size="lg">L</button>
+        </div>
+
+        <div class="article-body" data-text-size="md">
+          <Content />
+        </div>
+
+        <button type="button" class="this-helped-btn btn btn-outline mt-10">This helped</button>
+
+        <div class="mt-16 shadow-[6px_6px_0_var(--color-neutral)] card bg-base-200">
+          <div class="card-body">
+            <h2 class="card-title font-display">Miguel Amwayi</h2>
+            <p class="text-base-content/80">
+              Backend engineer, based in Nairobi. Writing this down to see it more clearly, not because it's finished.
+            </p>
+            <a href={withBase('/#now')} class="link link-primary font-bold">What I'm doing now →</a>
+          </div>
+        </div>
+
+        {others.length > 0 && (
+          <div class="mt-10">
+            <h2 class="font-display text-2xl font-semibold">Keep reading</h2>
+            <div class="mt-4 grid gap-4 md:grid-cols-2">
+              {others.map((other) => (
+                <a
+                  href={withBase(`/${section}/${other.slug}`)}
+                  class="card bg-base-200 shadow-[6px_6px_0_var(--color-base-300)] transition-transform hover:-translate-y-0.5"
+                >
+                  <div class="card-body">
+                    <h3 class="card-title font-display text-xl">{other.data.title}</h3>
+                    <p class="text-sm text-base-content/70">{other.data.summary}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!entry.data.draft && <Giscus />}
+        {!entry.data.draft && <Waline />}
+      </div>
+    </div>
+  </article>
+  <script src="../scripts/article-controls.js"></script>
+</BaseLayout>

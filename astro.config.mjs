@@ -1,17 +1,17 @@
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: 'https://Miguel-Shinyenyi.github.io/miguel-site',
   base: '/miguel-site',
-  integrations: [
-    // applyBaseStyles: false, Tailwind Preflight is also disabled in
-    // tailwind.config.mjs, so the hand-written global.css stays the only
-    // source of base typography/layout (see docs/design.md, Color section:
-    // Tailwind/daisyUI is scoped to new structural chrome, not essay body
-    // text). src/styles/tailwind.css is imported explicitly instead.
-    tailwind({ applyBaseStyles: false }),
-  ],
+  // Tailwind 4 / daisyUI 5 (docs/design.md, Color section, 2026-09-23):
+  // config lives in src/styles/tailwind.css itself (@import "tailwindcss"
+  // split into theme+utilities to skip Preflight, plus @plugin blocks),
+  // not a tailwind.config.mjs file. @astrojs/tailwind stays on the old
+  // PostCSS-era model and doesn't support Tailwind 4.
+  vite: {
+    plugins: [tailwindcss()],
+  },
   markdown: {
     shikiConfig: {
       // Outputs CSS variables instead of a hardcoded theme, so code blocks

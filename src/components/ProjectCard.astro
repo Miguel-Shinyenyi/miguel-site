@@ -1,0 +1,35 @@
+---
+// docs/redesign-spec-2026-09-23.md section 4.6.
+import { withBase } from '../lib/url';
+
+interface Props {
+  title: string;
+  summary: string;
+  status: string;
+  statusVariant: 'success' | 'primary';
+  category: string;
+  stack: string[];
+  link: string;
+  linkLabel: string;
+}
+const { title, summary, status, statusVariant, category, stack, link, linkLabel } = Astro.props;
+const href = link.startsWith('http') ? link : withBase(link);
+---
+<article class="card bg-base-100 rounded-box">
+  <div class="card-body gap-4">
+    <div class="flex items-center justify-between gap-2">
+      <span class:list={['badge badge-outline', statusVariant === 'success' ? 'badge-success' : 'badge-primary']}>
+        {status}
+      </span>
+      <span class="text-sm opacity-70">{category}</span>
+    </div>
+    <h3 class="card-title font-display text-3xl">{title}</h3>
+    <p>{summary}</p>
+    <div class="flex flex-wrap gap-2">
+      {stack.map((tech) => <span class="badge border-0 bg-base-300">{tech}</span>)}
+    </div>
+    <div class="card-actions mt-auto">
+      <a class="link link-primary font-bold" href={href}>{linkLabel}</a>
+    </div>
+  </div>
+</article>

@@ -2,19 +2,24 @@
 import '../styles/tailwind.css';
 import '../styles/global.css';
 import { withBase } from '../lib/url';
+import Footer from '../components/Footer.astro';
 
 interface Props {
   title: string;
 }
 const { title } = Astro.props;
 
+// docs/redesign-spec-2026-09-23.md section 4.1: Philosophy, Writing,
+// Projects, Now are anchors into the homepage's own sections (the spec's
+// own markup uses #id hrefs), not the site's separate per-collection
+// pages. withBase('/') + '#id' makes them work the same way from any page.
 const nav = [
-  { href: '/philosophy', label: 'philosophy', title: 'first principles, out loud' },
-  { href: '/tech', label: 'tech', title: 'plain explanations, tested against my own gaps' },
-  { href: '/journal', label: 'journal', title: 'curated excerpts from the daily practice' },
-  { href: '/projects', label: 'projects', title: "what's actually being built, and why" },
+  { id: 'philosophy', label: 'Philosophy' },
+  { id: 'writing', label: 'Writing' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'now', label: 'Now' },
 ];
-const currentPath = Astro.url.pathname;
+const home = withBase('/');
 ---
 <!doctype html>
 <html lang="en">
@@ -26,49 +31,98 @@ const currentPath = Astro.url.pathname;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=Karla:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
     <script is:inline>
-      // Picks the daisyUI theme (umwayi-light / umwayi-dark) that matches
-      // the same prefers-color-scheme signal global.css's own dark-mode
-      // block already reads, before first paint, so there's no flash.
-      document.documentElement.dataset.theme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'umwayi-dark'
-        : 'umwayi-light';
+      // Applies a saved theme override before first paint, so there's no
+      // flash. With nothing saved, daisyUI's own --prefersdark handling on
+      // the "nightwatch" theme (src/styles/tailwind.css) picks light/dark
+      // from the OS setting, no attribute needed either way.
+      try {
+        const stored = localStorage.getItem('theme');
+        if (stored) document.documentElement.setAttribute('data-theme', stored);
+      } catch {}
     </script>
   </head>
-  <body>
-    <header class="site-header">
-      <a href={withBase('/')} class="site-title">miguel</a>
-      <nav class="site-nav">
-        {nav.map((item) => {
-          const isActive = currentPath.startsWith(withBase(item.href));
-          return (
-            <a
-              href={withBase(item.href)}
-              title={item.title}
-              aria-current={isActive ? 'page' : undefined}
-              class:list={[
-                'relative transition-colors duration-150 hover:text-primary focus-visible:text-primary',
-                {
-                  'text-primary after:absolute after:inset-x-0 after:-bottom-1.5 after:h-0.5 after:bg-primary after:content-[\'\']':
-                    isActive,
-                },
-              ]}
-            >
-              /{item.label}
-            </a>
-          );
-        })}
-      </nav>
+  <body class="bg-base-100 text-base-content font-sans">
+    <header class="navbar border-b border-base-300 px-5 md:px-24">
+      <div class="navbar-start">
+        <a href={home} class="flex items-center gap-2 font-display text-2xl font-semibold">
+          <svg viewBox="0 0 24 24" class="size-6 shrink-0" aria-hidden="true">
+            <path
+              d="M12 21V8.5C12 5.5 14.5 3.2 17.3 3.7"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+            />
+          </svg>
+          Amwayi
+        </a>
+      </div>
+      <div class="navbar-end gap-2">
+        <ul class="menu menu-horizontal hidden text-base font-medium md:flex">
+          {nav.map((item) => (
+            <li><a href={`${home}#${item.id}`}>{item.label}</a></li>
+          ))}
+        </ul>
+
+        <label class="swap swap-rotate btn btn-circle btn-outline motion-reduce:transition-none" aria-label="Toggle dark theme">
+          <input type="checkbox" class="theme-controller" value="nightwatch" />
+          <svg class="swap-off size-5" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"
+              fill="currentColor"
+            />
+          </svg>
+          <svg class="swap-on size-5" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.5" fill="currentColor" />
+            <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M12 2v2.5M12 19.5V22M22 12h-2.5M4.5 12H2" />
+              <path d="M19.07 4.93l-1.77 1.77M6.7 17.3l-1.77 1.77M19.07 19.07l-1.77-1.77M6.7 6.7L4.93 4.93" />
+            </g>
+          </svg>
+        </label>
+
+        <details class="dropdown dropdown-end md:hidden">
+          <summary class="btn btn-circle btn-outline" aria-label="Open menu">
+            <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true">
+              <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </summary>
+          <ul class="menu dropdown-content w-[calc(100vw-2.5rem)] rounded-box bg-base-200 p-2 text-lg font-bold shadow-lg">
+            {nav.map((item) => (
+              <li><a href={`${home}#${item.id}`}>{item.label}</a></li>
+            ))}
+          </ul>
+        </details>
+      </div>
     </header>
     <main>
       <slot />
     </main>
-    <footer class="site-footer">
-      <p>observe, name, investigate, record, learn, govern.</p>
-    </footer>
-    <script src="../scripts/code-reveal.js"></script>
+    <Footer />
+    <script is:inline>
+      // Syncs the theme toggle to the effective theme, and persists a
+      // manual choice across page loads (a real necessity for a multi-page
+      // site; the spec's own "no JS" note for this control assumes a
+      // single page where the checkbox's own state is enough).
+      (function () {
+        const toggle = document.querySelector('.theme-controller');
+        if (!toggle) return;
+        const current =
+          document.documentElement.getAttribute('data-theme') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'nightwatch' : 'pasture');
+        toggle.checked = current === 'nightwatch';
+        toggle.addEventListener('change', () => {
+          const theme = toggle.checked ? 'nightwatch' : 'pasture';
+          document.documentElement.setAttribute('data-theme', theme);
+          try {
+            localStorage.setItem('theme', theme);
+          } catch {}
+        });
+      })();
+    </script>
   </body>
 </html>

@@ -1,16 +1,83 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind 4 / daisyUI 5 (docs/design.md, Color section, 2026-09-23).
 
-/* Preflight is off (tailwind.config.mjs), so no reset runs against the
-   existing essay typography in global.css. This stylesheet exists for
-   Tailwind/daisyUI utility and component classes on the new structural
-   chrome only (nav, buttons, the code-block interaction). daisyUI generates
-   the actual `umwayi-light` / `umwayi-dark` theme rules (from
-   tailwind.config.mjs) into the base layer above; which one applies is
-   picked by the `data-theme` attribute BaseLayout sets on <html>, mirroring
-   the same prefers-color-scheme signal global.css's own dark-mode block
-   already uses, not a new manual toggle. */
+   Preflight is skipped on purpose: importing "tailwindcss" as a single
+   import (as the spec's own app.css does) pulls in Preflight's base reset,
+   which would fight global.css's own hand-written base styles. Tailwind 4's
+   documented way to opt out is importing the theme and utilities layers
+   individually instead of the combined import. */
+@import 'tailwindcss/theme' layer(theme);
+@import 'tailwindcss/utilities' layer(utilities);
+
+@plugin 'daisyui' {
+  themes: pasture --default, nightwatch --prefersdark;
+}
+
+/* pasture: light. nightwatch: dark. Values from
+   docs/redesign-spec-2026-09-23.md section 3, used as given, docs/design.md
+   already settled that against the site's previous rust-orange accent this
+   replaces entirely rather than reconciling the two palettes. */
+
+@plugin 'daisyui/theme' {
+  name: 'pasture';
+  default: true;
+  color-scheme: light;
+  --color-base-100: #f3eee3;
+  --color-base-200: #fbf8f1;
+  --color-base-300: #e6decd;
+  --color-base-content: #1d2420;
+  --color-primary: #9a5b1e;
+  --color-primary-content: #fbf8f1;
+  --color-secondary: #3f5a3c;
+  --color-secondary-content: #f3eee3;
+  --color-accent: #e0a965;
+  --color-accent-content: #1d2420;
+  --color-neutral: #1d2420;
+  --color-neutral-content: #f3eee3;
+  --color-success: #3f5a3c;
+  --color-error: #b23a2e;
+  --radius-box: 1.25rem;
+  --radius-field: 999px;
+  --radius-selector: 999px;
+  /* The spec's own theme block omits these; daisyUI 5's component CSS
+     references var(--border)/--depth/--noise with no fallback (e.g.
+     .badge's `border: var(--border) solid ...`), so leaving them
+     undefined makes the whole shorthand invalid and drops the border
+     entirely. Found by checking a rendered badge's computed style, not
+     assumed from the spec or the CSS source. */
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin 'daisyui/theme' {
+  name: 'nightwatch';
+  color-scheme: dark;
+  --color-base-100: #141a17;
+  --color-base-200: #1b221e;
+  --color-base-300: #2e3732;
+  --color-base-content: #eee8db;
+  --color-primary: #e0a965;
+  --color-primary-content: #141a17;
+  --color-secondary: #9cc39a;
+  --color-secondary-content: #141a17;
+  --color-accent: #e0a965;
+  --color-accent-content: #141a17;
+  --color-neutral: #0e1310;
+  --color-neutral-content: #f3eee3;
+  --color-success: #9cc39a;
+  --color-error: #e07a6f;
+  --radius-box: 1.25rem;
+  --radius-field: 999px;
+  --radius-selector: 999px;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@theme {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans: 'Karla', 'Helvetica Neue', sans-serif;
+}
 
 :root {
   color-scheme: light dark;

@@ -19,13 +19,15 @@ interface Props {
 }
 const { entries, section } = Astro.props;
 ---
-<ul class="entry-list">
+<ul class="mt-8 flex flex-col gap-8">
   {entries.map((entry) => (
-    <li>
+    <li class="grid gap-2 border-b border-base-300 pb-8 md:grid-cols-[130px_1fr] md:gap-8">
       <EntryMeta date={entry.data.date} draft={entry.data.draft} updated={entry.data.updated} />
-      <div class="entry-body">
-        <a href={withBase(`/${section}/${entry.slug}`)}>{entry.data.title}</a>
-        <p class="entry-summary">{entry.data.summary}</p>
+      <div>
+        <a href={withBase(`/${section}/${entry.slug}`)} class="font-display text-2xl font-semibold hover:text-primary">
+          {entry.data.title}
+        </a>
+        <p class="mt-2 text-base-content/70">{entry.data.summary}</p>
       </div>
     </li>
   ))}

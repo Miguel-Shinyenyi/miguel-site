@@ -1,0 +1,102 @@
+---
+// The shepherd mascot, per docs/redesign-spec-2026-09-23.md section 4.2:
+// leaning on his crook, hand on chin, eyes up, a red shuka over a green
+// robe, one sheep at his feet. Bold outline, flat fill. The panel and hill
+// follow the active daisyUI theme (base-200/base-300 CSS custom
+// properties); the shepherd and sheep keep fixed colors regardless of
+// theme, same as the spec calls for.
+---
+<svg
+  viewBox="0 0 600 560"
+  class="h-full w-full"
+  role="img"
+  aria-label="An illustration of a shepherd leaning on his crook, hand on his chin, looking up in thought, with one sheep resting at his feet."
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <rect x="4" y="4" width="592" height="552" rx="40" fill="var(--color-base-200)" stroke="var(--color-base-300)" stroke-width="2" />
+  <path
+    d="M4,470 C120,430 220,455 320,442 C420,430 520,458 596,438 L596,552 L4,552 Z"
+    fill="var(--color-base-300)"
+  />
+
+  <!-- thought trail: three circles leading from his head toward the bubble -->
+  <circle cx="352" cy="118" r="7" fill="var(--color-base-content)" opacity="0.5" />
+  <circle cx="308" cy="92" r="10" fill="var(--color-base-content)" opacity="0.6" />
+  <circle cx="256" cy="70" r="14" fill="var(--color-base-content)" opacity="0.7" />
+
+  <!-- crook -->
+  <path
+    d="M452,466 L452,96 C452,72 472,60 492,66"
+    fill="none"
+    stroke="#4A3521"
+    stroke-width="10"
+    stroke-linecap="round"
+  />
+  <path
+    d="M452,466 L452,96 C452,72 472,60 492,66"
+    fill="none"
+    stroke="#1D2420"
+    stroke-width="14"
+    stroke-linecap="round"
+    opacity="0.18"
+  />
+
+  <!-- sheep -->
+  <g>
+    <ellipse cx="196" cy="438" rx="20" ry="14" fill="#F3EEE3" stroke="#1D2420" stroke-width="4" />
+    <circle cx="150" cy="432" r="15" fill="#F3EEE3" stroke="#1D2420" stroke-width="4" />
+    <circle cx="140" cy="424" r="3.4" fill="#1D2420" />
+    <path d="M132,420 C126,412 118,412 114,418" fill="none" stroke="#1D2420" stroke-width="4" stroke-linecap="round" />
+    <path d="M182,452 L180,462 M206,452 L206,462 M164,452 L162,462" stroke="#1D2420" stroke-width="4" stroke-linecap="round" />
+  </g>
+
+  <!-- shepherd: robe, shuka, arm to crook, head, arm to chin -->
+  <path
+    d="M340,236 L420,236 L440,462 L316,462 Z"
+    fill="#3F5A3C"
+    stroke="#1D2420"
+    stroke-width="5"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M336,244 C310,258 296,300 300,344 L322,340 C320,304 328,276 348,258 Z"
+    fill="#3F5A3C"
+    stroke="#1D2420"
+    stroke-width="5"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M406,238 C420,236 440,246 448,270 C454,290 452,320 434,332 L414,318 C424,300 422,280 412,268 Z"
+    fill="#B23A2E"
+    stroke="#1D2420"
+    stroke-width="5"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M396,240 L358,232 L352,258 C368,272 392,272 408,262 Z"
+    fill="#C1432A"
+    stroke="#1D2420"
+    stroke-width="5"
+    stroke-linejoin="round"
+  />
+
+  <!-- bent arm, hand on chin -->
+  <path
+    d="M402,252 C424,258 434,278 428,296 L410,290 C414,278 410,266 398,262 Z"
+    fill="#8A5A34"
+    stroke="#1D2420"
+    stroke-width="5"
+    stroke-linejoin="round"
+  />
+  <circle cx="418" cy="300" r="15" fill="#8A5A34" stroke="#1D2420" stroke-width="5" />
+
+  <!-- head -->
+  <circle cx="378" cy="196" r="52" fill="#8A5A34" stroke="#1D2420" stroke-width="5" />
+  <path d="M330,176 C336,146 364,132 392,138" fill="none" stroke="#1D2420" stroke-width="5" stroke-linecap="round" />
+
+  <!-- eyes, looking up -->
+  <ellipse cx="362" cy="184" rx="6" ry="8" fill="#1D2420" />
+  <ellipse cx="392" cy="180" rx="6" ry="8" fill="#1D2420" />
+  <circle cx="364" cy="180" r="1.6" fill="#F3EEE3" />
+  <circle cx="394" cy="176" r="1.6" fill="#F3EEE3" />
+</svg>

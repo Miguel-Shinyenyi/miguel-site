@@ -6,7 +6,10 @@ import { getCollection } from 'astro:content';
 const entries = (await getCollection('journal', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
-<BaseLayout title="Journal">
-  <h1>Journal</h1>
-  <EntryList entries={entries} section="journal" />
+<BaseLayout title="Journal — Amwayi">
+  <div class="mx-auto max-w-5xl px-5 py-16 md:px-24 md:py-28">
+    <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Writing</span>
+    <h1 class="font-display text-[34px] md:text-[52px]">Journal</h1>
+    <EntryList entries={entries} section="journal" />
+  </div>
 </BaseLayout>

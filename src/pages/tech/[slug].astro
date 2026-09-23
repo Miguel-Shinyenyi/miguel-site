@@ -1,8 +1,5 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import EntryMeta from '../../components/EntryMeta.astro';
-import Giscus from '../../components/Giscus.astro';
-import Waline from '../../components/Waline.astro';
+import ArticlePage from '../../components/ArticlePage.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -14,16 +11,5 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
 ---
-<BaseLayout title={entry.data.title}>
-  <div class="article-grid">
-    <EntryMeta date={entry.data.date} draft={entry.data.draft} updated={entry.data.updated} />
-    <div class="article-body">
-      <h1>{entry.data.title}</h1>
-      <Content />
-      {!entry.data.draft && <Giscus />}
-      {!entry.data.draft && <Waline />}
-    </div>
-  </div>
-</BaseLayout>
+<ArticlePage entry={entry} section="tech" sectionLabel="Tech" />

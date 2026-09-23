@@ -1,0 +1,29 @@
+---
+// docs/redesign-spec-2026-09-23.md section 4.8. Global (every page), not
+// just the homepage, matching how a footer normally works on a multi-page
+// site. Social links: GitHub only, per docs/design.md's meshing note,
+// Hashnode/LinkedIn/dev.to/Medium accounts don't exist yet, so they're
+// left out entirely rather than linked and broken.
+---
+<footer id="footer" class="footer bg-neutral px-5 py-16 text-neutral-content md:px-24">
+  <form id="subscribe" class="w-full max-w-md" novalidate>
+    <label for="email" class="label font-bold">Email address</label>
+    <div class="join w-full flex-col gap-2 md:flex-row md:gap-0">
+      <input
+        id="email"
+        name="email"
+        type="email"
+        required
+        class="input join-item w-full rounded-full text-neutral"
+        placeholder="you@example.com"
+      />
+      <button class="btn btn-accent join-item rounded-full">Subscribe</button>
+    </div>
+    <div id="ok" role="status" class="alert alert-success mt-3 hidden">Thanks. You'll get the next article.</div>
+    <div id="err" role="alert" class="alert alert-error mt-3 hidden">That email doesn't look right. Check it and try again.</div>
+  </form>
+  <nav class="flex flex-wrap gap-6 font-bold">
+    <a class="link link-accent" href="https://github.com/Miguel-Shinyenyi">GitHub</a>
+  </nav>
+</footer>
+<script src="../scripts/subscribe.js"></script>
