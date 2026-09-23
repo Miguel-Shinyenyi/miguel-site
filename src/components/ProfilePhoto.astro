@@ -1,0 +1,37 @@
+---
+// public/images/profile.jpg comes from UMWAYI (scripts/sync-content.mjs),
+// 800x800. Falls back to the previous inline SVG avatar if the sync
+// hasn't produced the file for some reason, per the brief's own
+// instruction not to let a missing photo break the build.
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { withBase } from '../lib/url';
+
+interface Props {
+  size: 'sm' | 'lg';
+  class?: string;
+}
+const { size, class: className = '' } = Astro.props;
+
+const photoPath = fileURLToPath(new URL('../../public/images/profile.jpg', import.meta.url));
+const hasPhoto = existsSync(photoPath);
+
+const dims = size === 'sm' ? 'size-8 md:size-10' : 'size-14 md:size-[72px]';
+---
+{hasPhoto ? (
+  <img
+    src={withBase('/images/profile.jpg')}
+    alt="Miguel (Amwayi)"
+    width="800"
+    height="800"
+    class:list={[dims, 'shrink-0 rounded-full border-2 border-ink object-cover', className]}
+  />
+) : (
+  <svg class:list={[dims, 'shrink-0', className]} viewBox="0 0 72 72" fill="none" aria-hidden="true">
+    <circle cx="36" cy="36" r="34" fill="#E8D6B8" stroke="#1D2420" stroke-width="3" />
+    <path d="M14 66 Q36 46 58 66" fill="#3F5A3C" stroke="#1D2420" stroke-width="3" />
+    <circle cx="36" cy="32" r="14" fill="#7A4A2E" stroke="#1D2420" stroke-width="3" />
+    <path d="M22 30 Q22 16 36 16 Q50 16 50 30 Q45 22 36 22 Q27 22 22 30 Z" fill="#1D1A17" />
+    <circle cx="31" cy="33" r="2" fill="#1D2420" /><circle cx="41" cy="33" r="2" fill="#1D2420" />
+  </svg>
+)}

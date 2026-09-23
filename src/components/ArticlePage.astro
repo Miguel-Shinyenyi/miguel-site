@@ -2,21 +2,30 @@
 // Shared article template, matched against the reference implementation's
 // article.html (~/Downloads/amwayi-site) rather than just
 // docs/redesign-spec-2026-09-23.md's rougher samples. Used by the
-// philosophy/tech/journal [slug] pages.
+// philosophy/tech/journal [slug] pages, and (per the brief) by
+// projects/[slug].astro too: same breadcrumb/illustration/On-this-page/
+// takeaways/comments shell, with project-only header meta (status,
+// category, stack) and a Links block instead of the article meta row and
+// Keep Reading.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Giscus from './Giscus.astro';
 import Waline from './Waline.astro';
-import { withBase } from '../lib/url';
+import ProfilePhoto from './ProfilePhoto.astro';
+import { withBase, resolveLink } from '../lib/url';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
 type Section = 'philosophy' | 'tech' | 'journal';
+type PageKind = Section | 'projects';
 
 interface Props {
-  entry: CollectionEntry<Section>;
-  section: Section;
+  entry: CollectionEntry<Section> | CollectionEntry<'projects'>;
+  section: PageKind;
   sectionLabel: string;
 }
 const { entry, section, sectionLabel } = Astro.props;
+const isProject = section === 'projects';
+const project = isProject ? (entry as CollectionEntry<'projects'>).data : null;
+
 const { Content, headings } = await entry.render();
 const toc = headings.filter((h) => h.depth === 2);
 
@@ -33,58 +42,95 @@ const readTime = Math.max(1, Math.round(wordCount / 215));
 // one, matching the reference (a Tech article suggests a Tech piece and a
 // Journal piece, not two more Tech pieces); each card carries its own
 // section as an eyebrow label since they can differ from this page's.
+// Projects don't get a Keep Reading section, per the brief's own project-
+// page spec (breadcrumb, header meta, illustration, On this page, body,
+// takeaways, Links, comments, nothing else).
 const sectionLabels: Record<Section, string> = { philosophy: 'Philosophy', tech: 'Tech', journal: 'Journal' };
 const allSections: Section[] = ['philosophy', 'tech', 'journal'];
-const others = (
-  await Promise.all(
-    allSections.map(async (s) => {
-      const items = await getCollection(s, ({ data, slug }) => !data.draft && !(s === section && slug === entry.slug));
-      return items.map((item) => ({ item, section: s }));
-    }),
-  )
-)
-  .flat()
-  .sort((a, b) => b.item.data.date.valueOf() - a.item.data.date.valueOf())
-  .slice(0, 2);
+const others = isProject
+  ? []
+  : (
+      await Promise.all(
+        allSections.map(async (s) => {
+          const items = await getCollection(s, ({ data, slug }) => !data.draft && !(s === section && slug === entry.slug));
+          return items.map((item) => ({ item, section: s }));
+        }),
+      )
+    )
+      .flat()
+      .sort((a, b) => b.item.data.date.valueOf() - a.item.data.date.valueOf())
+      .slice(0, 2);
+
+const backHref = isProject ? `${withBase('/')}#projects` : `${withBase('/')}#writing`;
+const backLabel = isProject ? 'Back to all projects' : 'Back to all articles';
 ---
-<BaseLayout
-  title={`${entry.data.title} · Amwayi`}
-  variant="inner"
-  simpleFooter
-  backHref={`${withBase('/')}#writing`}
-  backLabel="Back to all articles"
->
+<BaseLayout title={`${entry.data.title} · Amwayi`} variant="inner" simpleFooter backHref={backHref} backLabel={backLabel}>
   <!-- ============ TITLE ============ -->
     <section class="mx-auto max-w-[1440px] px-5 pb-7 pt-8 md:px-24 md:pb-12 md:pt-16">
       <div class="flex max-w-[1000px] flex-col gap-4 md:gap-6">
         <div class="breadcrumbs py-0 text-sm font-bold text-soft md:text-[15px]">
-          <ul>
-            <li><a href={`${withBase('/')}#writing`}>Articles</a></li>
-            <li class="text-primary">{sectionLabel}</li>
-          </ul>
+          {isProject ? (
+            <ul>
+              <li><a href={withBase('/')}>Home</a></li>
+              <li><a href={`${withBase('/')}#projects`}>Projects</a></li>
+              <li class="text-primary">{entry.data.title}</li>
+            </ul>
+          ) : (
+            <ul>
+              <li><a href={`${withBase('/')}#writing`}>Articles</a></li>
+              <li class="text-primary">{sectionLabel}</li>
+            </ul>
+          )}
         </div>
         <h1 class="text-[38px] leading-[1.05] tracking-[-0.025em] md:text-[68px]">{entry.data.title}</h1>
         <p class="max-w-[820px] text-lg leading-normal text-muted md:text-[23px]">{entry.data.summary}</p>
-        <div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1 md:pt-2">
-          <span class="flex items-center gap-2.5 font-bold">
-            <span class="flex size-8 items-end justify-center overflow-hidden rounded-full border-2 border-ink bg-[#7A4A2E] md:size-10" aria-hidden="true">
-              <span class="h-[30%] w-[65%] rounded-t-full bg-pasture" />
+
+        {project ? (
+          <div class="flex flex-wrap items-center gap-3">
+            <span class:list={['badge badge-outline font-bold', project.statusVariant === 'success' ? 'badge-success' : 'badge-primary']}>
+              {project.status}
             </span>
-            Amwayi
-          </span>
-          <span class="text-sm text-soft md:text-base">
-            {fmtShort(entry.data.date)} · {readTime} min read
-            {entry.data.draft && ' · draft'}
-            {entry.data.updated && ` · updated ${fmtLong(entry.data.updated)}`}
-          </span>
-          {entry.data.tags && entry.data.tags.length > 0 && (
-            <span class="hidden gap-2 md:flex">
-              {entry.data.tags.map((tag) => <span class="badge border-0 bg-base-300">{tag}</span>)}
+            <span class="text-sm text-soft md:text-base">{project.category}</span>
+          </div>
+        ) : (
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1 md:pt-2">
+            <span class="flex items-center gap-2.5 font-bold">
+              <ProfilePhoto size="sm" />
+              Amwayi
             </span>
-          )}
-        </div>
+            <span class="text-sm text-soft md:text-base">
+              {fmtShort(entry.data.date)} · {readTime} min read
+              {entry.data.draft && ' · draft'}
+              {entry.data.updated && ` · updated ${fmtLong(entry.data.updated)}`}
+            </span>
+            {entry.data.tags && entry.data.tags.length > 0 && (
+              <span class="hidden gap-2 md:flex">
+                {entry.data.tags.map((tag) => <span class="badge border-0 bg-base-300">{tag}</span>)}
+              </span>
+            )}
+          </div>
+        )}
+        {project && project.stack.length > 0 && (
+          <div class="flex flex-wrap gap-2">
+            {project.stack.map((tech) => <span class="badge border-0 bg-base-300">{tech}</span>)}
+          </div>
+        )}
       </div>
     </section>
+
+    <!-- ============ ILLUSTRATION ============ -->
+    {entry.data.illustration && (
+      <figure class="mx-auto flex max-w-[1440px] flex-col gap-2.5 px-5 md:gap-3.5 md:px-24">
+        <div class="overflow-hidden rounded-[18px] border-[2.5px] border-ink shadow-[5px_5px_0_#1D2420] md:rounded-3xl md:border-[3px] md:shadow-[8px_8px_0_#1D2420]">
+          <img
+            src={withBase(`/illustrations/${entry.data.illustration}`)}
+            alt={entry.data.illustrationAlt ?? ''}
+            class="block w-full h-auto"
+          />
+        </div>
+        {entry.data.illustrationAlt && <figcaption class="text-[13px] text-soft md:text-[15px]">{entry.data.illustrationAlt}</figcaption>}
+      </figure>
+    )}
 
     <!-- ============ BODY ============ -->
     <div class="mx-auto grid max-w-[1440px] grid-cols-1 gap-8 px-5 pb-14 pt-7 md:grid-cols-12 md:gap-12 md:px-24 md:pb-24 md:pt-[72px]">
@@ -172,20 +218,37 @@ const others = (
         </button>
 
         <div class="sticker card card-side mt-4 items-center gap-4 rounded-[20px] bg-base-200 p-5 md:mt-8 md:gap-5 md:p-7">
-          <svg class="size-14 shrink-0 md:size-[72px]" viewBox="0 0 72 72" fill="none" aria-hidden="true">
-            <circle cx="36" cy="36" r="34" fill="#E8D6B8" stroke="#1D2420" stroke-width="3" />
-            <path d="M14 66 Q36 46 58 66" fill="#3F5A3C" stroke="#1D2420" stroke-width="3" />
-            <circle cx="36" cy="32" r="14" fill="#7A4A2E" stroke="#1D2420" stroke-width="3" />
-            <path d="M22 30 Q22 16 36 16 Q50 16 50 30 Q45 22 36 22 Q27 22 22 30 Z" fill="#1D1A17" />
-            <circle cx="31" cy="33" r="2" fill="#1D2420" /><circle cx="41" cy="33" r="2" fill="#1D2420" />
-          </svg>
+          <ProfilePhoto size="lg" />
           <div class="flex flex-col gap-1">
             <span class="font-display text-[19px] font-semibold md:text-[22px]">Written by Amwayi</span>
             <span class="text-muted !text-[15px] leading-normal md:!text-base">Backend engineer in Nairobi. I write about philosophy, tech and journaling.</span>
           </div>
         </div>
 
-        {!entry.data.draft && <Giscus />}
+        {project && project.links && project.links.length > 0 && (
+          <div class="mt-10">
+            <h2 class="text-2xl font-semibold">Links</h2>
+            <ul class="mt-4 flex flex-col gap-2">
+              {project.links.map((link) => {
+                const external = !link.url.startsWith('/');
+                return (
+                  <li>
+                    <a
+                      href={resolveLink(link.url)}
+                      class="link link-primary font-bold"
+                      target={external ? '_blank' : undefined}
+                      rel={external ? 'noopener' : undefined}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        {!entry.data.draft && !isProject && <Giscus />}
         {!entry.data.draft && <Waline />}
       </article>
     </div>

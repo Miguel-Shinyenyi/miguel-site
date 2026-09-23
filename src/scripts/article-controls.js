@@ -67,17 +67,93 @@ document.querySelectorAll('[data-copy-link]').forEach((btn) => {
   });
 });
 
-// ---------- "This helped" (can appear twice: sidebar + inline on phone) ----------
-document.querySelectorAll('[data-helped]').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    const on = btn.getAttribute('aria-pressed') !== 'true';
-    document.querySelectorAll('[data-helped]').forEach((b) => {
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+// ---------- "This helped": posts an anonymous "This helped" comment to
+// this page's own Waline thread (the same server src/components/Waline.astro
+// points at), so it shows up alongside real guest comments rather than
+// just toggling a local UI state. Request shape read from @waline/api's
+// own source (its addComment: POST {serverURL}/api/comment?lang=en,
+// {nick, mail, link, comment, ua, url}), not guessed, and confirmed
+// against the live server: mail/link must be sent as empty strings, not
+// omitted, or the server 500s trying to hash an undefined mail for an
+// avatar. Confirmed the server has no comment moderation enabled (a test
+// post came back with status: "approved" immediately, not "waiting").
+//
+// "Same device can't click twice" is enforced client-side only
+// (localStorage), per browser, not per device: clearing site data or
+// using another browser resets it. Real per-visitor enforcement would
+// need a change on the Waline server, out of scope here.
+(function () {
+  const WALINE_SERVER = 'https://waline-comments-azure-zeta.vercel.app';
+  const buttons = document.querySelectorAll('[data-helped]');
+  if (!buttons.length) return;
+
+  const path = window.location.pathname;
+  const storageKey = `helped:${path}`;
+  const status = document.querySelector('[data-copy-status]');
+
+  function showStatus(message, isError) {
+    if (!status) return;
+    status.textContent = message;
+    status.classList.remove('hidden');
+    status.classList.toggle('text-error', !!isError);
+    status.classList.toggle('text-success', !isError);
+    setTimeout(() => status.classList.add('hidden'), 3000);
+  }
+
+  function setPressed() {
+    buttons.forEach((b) => {
+      b.setAttribute('aria-pressed', 'true');
+      b.disabled = true;
       const l = b.querySelector('[data-helped-label]');
-      if (l) l.textContent = on ? 'Thanks noted' : 'This helped';
+      if (l) l.textContent = 'Thanks noted';
+    });
+  }
+
+  let alreadyHelped = false;
+  try {
+    alreadyHelped = localStorage.getItem(storageKey) === 'true';
+  } catch {
+    // Storage unavailable (private mode, blocked cookies); just skip the
+    // remembered state, the button still works for this visit.
+  }
+  if (alreadyHelped) setPressed();
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (btn.getAttribute('aria-pressed') === 'true') return;
+      buttons.forEach((b) => (b.disabled = true));
+
+      try {
+        const res = await fetch(`${WALINE_SERVER}/api/comment?lang=en`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nick: 'Anonymous',
+            mail: '',
+            link: '',
+            comment: 'This helped',
+            ua: navigator.userAgent,
+            url: path,
+          }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json || json.errno !== 0) {
+          throw new Error(json?.errmsg || `Request failed (${res.status})`);
+        }
+
+        try {
+          localStorage.setItem(storageKey, 'true');
+        } catch {
+          // Best-effort only; the click still succeeded server-side.
+        }
+        setPressed();
+      } catch {
+        buttons.forEach((b) => (b.disabled = false));
+        showStatus("Couldn't save that. Try again in a moment.", true);
+      }
     });
   });
-});
+})();
 
 // ---------- highlight the section currently being read ----------
 const tocLinks = document.querySelectorAll('[data-toc] a');

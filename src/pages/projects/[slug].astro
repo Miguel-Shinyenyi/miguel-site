@@ -1,8 +1,10 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Giscus from '../../components/Giscus.astro';
-import Waline from '../../components/Waline.astro';
-import { withBase } from '../../lib/url';
+// Projects render through the same shared article template as
+// philosophy/tech/journal, per the brief: the old slim template here is
+// gone (it also rendered an empty "Comments" heading from Giscus above
+// "Guest comments", which ArticlePage.astro's isProject branch skips by
+// only rendering Waline for projects).
+import ArticlePage from '../../components/ArticlePage.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -14,42 +16,5 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
 ---
-<BaseLayout
-  title={`${entry.data.title} — Amwayi`}
-  variant="inner"
-  simpleFooter
-  backHref={`${withBase('/')}#projects`}
-  backLabel="Back to all projects"
->
-  <article class="mx-auto max-w-3xl px-5 py-12 md:px-24 md:py-20">
-    <div class="breadcrumbs text-sm">
-      <ul>
-        <li><a href={withBase('/')}>Home</a></li>
-        <li><a href={`${withBase('/')}#projects`}>Projects</a></li>
-        <li>{entry.data.title}</li>
-      </ul>
-    </div>
-
-    <div class="mt-3 flex flex-wrap items-center gap-3">
-      <span class:list={['badge badge-outline', entry.data.statusVariant === 'success' ? 'badge-success' : 'badge-primary']}>
-        {entry.data.status}
-      </span>
-      <span class="text-sm text-base-content/70">{entry.data.category}</span>
-    </div>
-    <h1 class="mt-3 font-display text-[34px] leading-tight md:text-[52px]">{entry.data.title}</h1>
-
-    <div class="mt-4 flex flex-wrap gap-2">
-      {entry.data.stack.map((tech) => <span class="badge border-0 bg-base-300">{tech}</span>)}
-    </div>
-
-    <div class="article-body mt-10" data-text-size="md">
-      <Content />
-    </div>
-
-    {!entry.data.draft && <Giscus />}
-    {!entry.data.draft && <Waline />}
-  </article>
-  <script src="../../scripts/article-controls.js"></script>
-</BaseLayout>
+<ArticlePage entry={entry} section="projects" sectionLabel="Projects" />

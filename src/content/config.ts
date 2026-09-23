@@ -8,24 +8,29 @@ const baseSchema = z.object({
   updated: z.date().optional(),
 });
 
-// docs/redesign-spec-2026-09-23.md section 4.9 front matter, plus
-// docs/design.md's meshing note: crossPost exists as an optional field for
-// when Hashnode/dev.to/Medium/LinkedIn accounts are real, but no article
-// gets a value in it yet, and the footer only renders links that work today.
+// UMWAYI's site/README.md defines this front matter; it's the actual
+// source of truth for what fields exist (see scripts/sync-content.mjs and
+// docs/design.md's decisions log). crossPost is gone: no file ever used
+// it, and UMWAYI's own schema doesn't have it.
 const articleSchema = baseSchema.extend({
   tags: z.array(z.string()).optional(),
   illustration: z.string().optional(),
   illustrationAlt: z.string().optional(),
-  crossPost: z.array(z.enum(['hashnode', 'devto', 'medium', 'linkedin'])).optional(),
 });
 
-const projectSchema = baseSchema.extend({
+const linkSchema = z.object({
+  label: z.string(),
+  url: z.string(),
+});
+
+const projectSchema = articleSchema.extend({
   status: z.string(),
   statusVariant: z.enum(['success', 'primary']),
   category: z.string(),
   stack: z.array(z.string()),
   link: z.string(),
   linkLabel: z.string(),
+  links: z.array(linkSchema).optional(),
 });
 
 const nowSchema = z.object({

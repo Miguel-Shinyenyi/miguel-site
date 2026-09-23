@@ -1,10 +1,18 @@
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
 const SOURCES = [
   { file: 'career-prep.md', label: 'career prep' },
   { file: 'cmu-masters.md', label: 'cmu masters' },
   { file: 'routine-machine.md', label: 'routine machine' },
 ];
 
-const RAW_BASE = 'https://raw.githubusercontent.com/Miguel-Shinyenyi/UMWAYI/main/projects';
+// scripts/sync-content.mjs normalizes UMWAYI's own root projects/*.md
+// (its internal tracking files, distinct from site/projects/, the public
+// project pages) to this fixed path, whether the build cloned UMWAYI or
+// read it from UMWAYI_PATH. One local source, one parser, no network
+// fetch at build time any more (see docs/design.md's decisions log).
+const PROJECTS_DIR = join(process.cwd(), '.umwayi', 'projects');
 
 export interface OpenThread {
   project: string;
@@ -43,22 +51,22 @@ function extractOpenItems(markdown: string): string[] {
   return items;
 }
 
-// Pulls the open-questions/open-decisions bullets straight from UMWAYI's public
-// repo at build time (see docs/design.md's homepage open-questions feature).
-// Best-effort: a network hiccup during build should never fail the site build,
-// it should just mean the section renders empty for that build.
+// Pulls the open-questions/open-decisions bullets from UMWAYI's own
+// tracking files, synced locally at build time by scripts/sync-content.mjs
+// (see docs/design.md's homepage open-questions feature). Best-effort: a
+// missing file should never fail the build, it should just mean the
+// section renders empty for that build, unlike the article/project sync
+// itself, which fails loudly on purpose.
 export async function getOpenThreads(max = 3): Promise<OpenThread[]> {
-  const byProject = await Promise.all(
-    SOURCES.map(async ({ file, label }) => {
-      try {
-        const res = await fetch(`${RAW_BASE}/${file}`);
-        if (!res.ok) return { label, items: [] as string[] };
-        return { label, items: extractOpenItems(await res.text()) };
-      } catch {
-        return { label, items: [] as string[] };
-      }
-    })
-  );
+  const byProject = SOURCES.map(({ file, label }) => {
+    try {
+      const path = join(PROJECTS_DIR, file);
+      if (!existsSync(path)) return { label, items: [] as string[] };
+      return { label, items: extractOpenItems(readFileSync(path, 'utf-8')) };
+    } catch {
+      return { label, items: [] as string[] };
+    }
+  });
 
   const threads: OpenThread[] = [];
   let round = 0;

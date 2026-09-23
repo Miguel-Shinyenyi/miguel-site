@@ -26,6 +26,40 @@ body {
   margin: 0;
 }
 
+/* Preflight is off, so the UA stylesheet's default h1-h6/p margins were
+   never zeroed. Every section on this site lays headings and paragraphs
+   out with flex/grid `gap` (matching the reference, which gets this for
+   free from Preflight), so those UA margins stack on top of the gap
+   instead of being replaced by it - confirmed by comparing computed
+   margins on the hero's h1/p against the reference (0px there, ~14-51px
+   here) and it visibly inflated the hero, pillars and hub section
+   heights. .prose-amwayi already zeroes its own p/li margins for the
+   same reason; this covers everywhere else. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Ported from the reference's own @layer base rule (src/input.css:
+   "h1, h2, h3 { @apply font-display; }"), missing here until now: every
+   h1/h2/h3 across the site (hero, article titles, section headings) was
+   silently falling back to Karla (the body/sans font) instead of
+   Fraunces, since nothing set the display font by default and none of
+   the heading markup applied font-display explicitly either. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
 /* fieldset (the pillars radio group) carries a browser-default border,
    padding and min-width that Preflight normally resets; without it the
    fieldset drew a visible box around the whole pillar grid. */
@@ -84,6 +118,21 @@ a.card,
   text-decoration: none;
 }
 
+/* Same unlayered-beats-layered problem as everywhere else in this file:
+   .navbar a/.menu a/.row-link's own `color: inherit` above permanently
+   overrode their `hover:text-primary` utility, since that utility lives
+   in a Tailwind layer. Verified against the reference with Playwright:
+   its nav links and article-listing rows go from ink to primary
+   (#9A5B1E) on hover, ours stayed ink at rgb(29,36,32) both states.
+   .breadcrumbs a and a.card need no equivalent rule - neither one has a
+   color hover in the reference either (breadcrumbs' color doesn't
+   change on hover there, and the Keep Reading a.card only lifts). */
+.navbar a:hover,
+.menu a:hover,
+.row-link:hover {
+  color: var(--color-primary);
+}
+
 /* ---- small text utilities the reference keeps as named tokens rather
    than inline hex, reused the same way here ---- */
 
@@ -116,6 +165,31 @@ a.card,
 .sticker-sm {
   border: 2px solid var(--color-ink);
   box-shadow: 3px 3px 0 var(--color-ink);
+}
+
+/* Interactive stickered controls (Copy link, This helped) get their own
+   explicit hover: a static box-shadow declared here is unlayered CSS, so
+   it permanently outranks daisyUI's own layered .btn:hover shadow/border
+   response regardless of what that response computes (the same
+   cascade-layers bug class hit four times already), and a plain
+   background-color utility like bg-base-200 locks out daisyUI's
+   hover-responsive --btn-bg the same way. Verified empirically with
+   Playwright: before this rule, every computed style (background, shadow,
+   border, transform) was byte-identical at rest and on hover. Rather than
+   fight the cascade to route daisyUI's own hover through, this gives
+   these buttons a deliberate lift + deeper shadow, the same interaction
+   language the Keep Reading cards and the thought bubble already use. */
+.btn.sticker,
+.btn.sticker-sm {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn.sticker:hover {
+  transform: translateY(-2px);
+  box-shadow: 7px 7px 0 var(--color-ink);
+}
+.btn.sticker-sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0 var(--color-ink);
 }
 
 /* ---- pillars: radio cards. The checked card turns dark, and one shared
@@ -201,6 +275,11 @@ a.card,
 .code-panel {
   margin: 1.75rem 0;
   border-radius: 1rem;
+  /* Without this, the header bar's and <pre>'s own square corners poked
+     past the panel's rounded border, visible as a mismatch at the top
+     corners under the offset shadow (.sticker, applied alongside this
+     class). Verified by zooming a screenshot. */
+  overflow: hidden;
 }
 
 .code-panel-header {
@@ -222,9 +301,9 @@ a.card,
 
 pre.astro-code {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 12.5px;
   line-height: 1.7;
-  padding: 1.25rem 1.5rem;
+  padding: 1rem;
   overflow-x: auto;
 
   --astro-code-color-background: var(--color-ink);
@@ -238,6 +317,19 @@ pre.astro-code {
   --astro-code-token-constant: var(--color-accent);
   --astro-code-token-parameter: var(--color-neutral-content);
   --astro-code-token-link: var(--color-neutral-content);
+}
+
+/* Phone gets 16px side padding and a 12.5px font (verified with Playwright:
+   the panel is 331px wide at a 375px viewport with 24px padding, room for
+   about 32 characters; these two changes make every 40-char diagram in
+   UMWAYI's content fit with no sideways scroll, while real code lines
+   still scroll inside their own panel as they should). Desktop keeps the
+   roomier values. */
+@media (min-width: 768px) {
+  pre.astro-code {
+    font-size: 0.9rem;
+    padding: 1.25rem 1.5rem;
+  }
 }
 
 /* ---- prose-amwayi: the one surface markdown renders into directly, so
@@ -350,6 +442,51 @@ body:has(#size-l:checked) .prose-amwayi {
 .toc-link[aria-current='true'] {
   background: var(--color-base-300);
   font-weight: 700;
+}
+
+/* ---- takeaways: the numbered list at the end of every article/project
+   body's "## What I took from it" section (UMWAYI's site/README.md body
+   rule), styled with the reference's numbered badge-accent circles via a
+   CSS counter rather than a rehype plugin: Astro's own heading-slug
+   pipeline already turns that heading into id="what-i-took-from-it" (a
+   plain lowercase-and-hyphenate slug, no punctuation in the heading text
+   to complicate it), so `+ ol` alone reaches the very next markdown
+   element, the numbered list itself. ---- */
+
+#what-i-took-from-it + ol {
+  list-style: none;
+  counter-reset: takeaway;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+#what-i-took-from-it + ol li {
+  counter-increment: takeaway;
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+#what-i-took-from-it + ol li::before {
+  content: counter(takeaway);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 2px solid var(--color-ink);
+  background: var(--color-accent);
+  color: var(--color-accent-content);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+@media (min-width: 768px) {
+  #what-i-took-from-it + ol li::before {
+    width: 34px;
+    height: 34px;
+  }
 }
 
 /* ---- comments (giscus / waline), carried forward from the previous

@@ -32,7 +32,7 @@ const socialLinks = [
   <footer class="bg-neutral text-[#A9B0A7]">
     <div class="mx-auto flex max-w-[1440px] flex-col-reverse gap-2 px-5 py-8 text-sm md:flex-row md:items-center md:justify-between md:px-24 md:py-10 md:text-[15px]">
       <span>© 2026 Amwayi</span>
-      <a href={backHref} class="py-3 text-base font-bold text-ochre-light hover:underline">{backLabel}</a>
+      <a href={backHref} class="py-3 text-base font-bold text-ochre-light no-underline hover:underline">{backLabel}</a>
     </div>
   </footer>
 ) : (
@@ -65,7 +65,7 @@ const socialLinks = [
         <span>© 2026 Amwayi</span>
         <nav aria-label="Elsewhere" class="grid grid-cols-2 gap-x-7 gap-y-1 text-base font-bold md:flex">
           {socialLinks.map((link) => (
-            <a href={link.href} class="py-3 text-ochre-light hover:underline">{link.label}</a>
+            <a href={link.href} class="py-3 text-ochre-light no-underline hover:underline">{link.label}</a>
           ))}
         </nav>
       </div>

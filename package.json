@@ -3,7 +3,9 @@
   "type": "module",
   "version": "0.1.0",
   "scripts": {
+    "predev": "node scripts/sync-content.mjs",
     "dev": "astro dev",
+    "prebuild": "node scripts/sync-content.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check:mobile": "node scripts/check-mobile-viewport.mjs"

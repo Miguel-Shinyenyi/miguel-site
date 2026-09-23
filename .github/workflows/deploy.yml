@@ -2,11 +2,24 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  repository_dispatch:
+    types: [umwayi-content]
+  workflow_dispatch: {}
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Explicit step rather than relying solely on withastro/action@v3
+      # (or npm's own prebuild lifecycle hook inside it) to invoke this:
+      # this repo has no way to check that action's internals against the
+      # live network from here, so the content sync runs as its own step
+      # regardless of what build command the action ends up calling.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Sync content from UMWAYI
+        run: node scripts/sync-content.mjs
       - uses: withastro/action@v3
   deploy:
     needs: build

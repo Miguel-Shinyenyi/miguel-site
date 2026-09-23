@@ -1,3 +1,14 @@
 node_modules/
 dist/
 .astro/
+
+# Content comes from UMWAYI at build time (scripts/sync-content.mjs),
+# never committed here. src/content/config.ts (the schema) stays.
+.umwayi/
+src/content/philosophy/*.md
+src/content/tech/*.md
+src/content/journal/*.md
+src/content/projects/*.md
+src/content/now/*.md
+public/illustrations/
+public/images/

@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- The site's cursor-blink glyph (the working, watching mind, the
-       shepherd's own position in the UMWAYI metaphor), not an illustrated
-       mark. See docs/design.md, Personal mark. -->
-  <rect width="32" height="32" fill="#17130e"/>
-  <rect x="13" y="7" width="6" height="18" fill="#d9834a"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- The reference navbar's own crook glyph (index.html: path d="M9 22V9a4 4 0 1 1 8 0v1"),
+       not the earlier revision's unrelated cursor-bar favicon. Backed with the
+       site's ink color and drawn in the light ochre accent so it reads at 16px
+       on both light and dark browser tabs. -->
+  <rect width="24" height="24" rx="6" fill="#1D2420"/>
+  <path d="M9 21V8a4 4 0 1 1 8 0v1" fill="none" stroke="#E0A965" stroke-width="2.6" stroke-linecap="round"/>
 </svg>
