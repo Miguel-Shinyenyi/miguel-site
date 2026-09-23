@@ -18,9 +18,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      # PRIVATE_NAMES drives sync-content.mjs's privacy check (the names
+      # live only in this secret, never in the repo). It's set on both
+      # steps because the action's own build re-runs the sync through
+      # npm's prebuild hook, and the check has to be armed for that run
+      # too, not just the explicit one above.
       - name: Sync content from UMWAYI
         run: node scripts/sync-content.mjs
+        env:
+          PRIVATE_NAMES: ${{ secrets.PRIVATE_NAMES }}
       - uses: withastro/action@v3
+        env:
+          PRIVATE_NAMES: ${{ secrets.PRIVATE_NAMES }}
   deploy:
     needs: build
     runs-on: ubuntu-latest

@@ -167,8 +167,8 @@ a.card,
   color: var(--soft);
 }
 
-/* PostHog-style sticker look: bold outline plus a hard offset shadow,
-   used for illustration panels, code blocks, callouts and cards. */
+/* Sticker look: bold outline plus a hard offset shadow, used for
+   illustration panels, code blocks, callouts and cards. */
 .sticker {
   border: 2px solid var(--color-ink);
   box-shadow: 5px 5px 0 var(--color-ink);

@@ -15,9 +15,10 @@
 // articles. A failed build keeps the last good deploy live instead.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, rmSync, copyFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, rmSync, copyFileSync, readFileSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { OPEN_THREAD_SOURCES, extractOpenItems } from '../src/lib/openItems.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const UMWAYI_REMOTE = 'https://github.com/Miguel-Shinyenyi/UMWAYI.git';
@@ -171,6 +172,91 @@ if (source === CLONE_DIR) {
   log(`UMWAYI projects/ -> .umwayi/projects/ (${n} file${n === 1 ? '' : 's'}, for openThreads)`);
 } else {
   log('No projects/ folder found for openThreads; the open-threads section will render empty.');
+}
+
+// ---- privacy guard ----------------------------------------------------
+//
+// UMWAYI's site/README.md carries the rule this enforces: nothing the site
+// publishes names a company Miguel applied to or interviewed with. This is
+// the backstop for it, so a name can't reappear through a content edit
+// without the build noticing.
+//
+// The names themselves live only in the environment (a repository secret
+// of the same name in CI), never in this repo, and a match reports the
+// file and line but never the matched text. That last part is load-bearing
+// rather than belt-and-braces: GitHub masks a secret only as the exact
+// whole string it was set to, so an individual name out of a
+// comma-separated list would print unmasked in a public build log.
+//
+// Scope is "what actually reaches the site": every synced markdown file,
+// plus the open-thread bullets extractOpenItems() publishes, and NOT the
+// rest of UMWAYI's root projects/*.md, which are private tracking notes
+// that legitimately name companies and never reach a page.
+function privateNameMatchers() {
+  const raw = process.env.PRIVATE_NAMES;
+  if (!raw) return null;
+  const names = raw
+    .split(',')
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+  if (names.length === 0) return null;
+  // Whole words, case-insensitive. \b still does the right thing where a
+  // name butts against punctuation or a hyphen (a hostname, a compound),
+  // which should match; the escape keeps a name with regex characters in
+  // it from being read as a pattern.
+  return names.map((name) => new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i'));
+}
+
+function scanTextLines(label, lines, matchers, hits) {
+  lines.forEach(({ text, line }) => {
+    if (matchers.some((re) => re.test(text))) hits.push(`${label}:${line}`);
+  });
+}
+
+function scanFile(absPath, label, matchers, hits) {
+  const lines = readFileSync(absPath, 'utf-8')
+    .split('\n')
+    .map((text, index) => ({ text, line: index + 1 }));
+  scanTextLines(label, lines, matchers, hits);
+}
+
+const matchers = privateNameMatchers();
+if (!matchers) {
+  log('PRIVATE_NAMES not set; skipping the published-content privacy check.');
+} else {
+  const hits = [];
+
+  const syncedDirs = [...ARTICLE_DIRS.map(({ to }) => to), 'projects', 'now', 'links'];
+  for (const dir of syncedDirs) {
+    const absDir = join(ROOT, 'src', 'content', dir);
+    if (!existsSync(absDir)) continue;
+    for (const entry of readdirSync(absDir).filter((f) => f.endsWith('.md'))) {
+      scanFile(join(absDir, entry), `src/content/${dir}/${entry}`, matchers, hits);
+    }
+  }
+
+  // Only the published bullets, with their real line numbers in the source
+  // file. Every bullet is checked, not just the three getOpenThreads()
+  // currently shows: which three those are depends on how many earlier
+  // bullets are still open, so a fourth becomes visible the moment one
+  // above it is resolved, with no edit to the bullet itself to catch.
+  const umwayiProjects = join(CLONE_DIR, 'projects');
+  for (const { file } of OPEN_THREAD_SOURCES) {
+    const absPath = join(umwayiProjects, file);
+    if (!existsSync(absPath)) continue;
+    const items = extractOpenItems(readFileSync(absPath, 'utf-8'));
+    scanTextLines(`UMWAYI projects/${file} (open threads)`, items, matchers, hits);
+  }
+
+  if (hits.length > 0) {
+    fail(
+      `Published content names something PRIVATE_NAMES forbids, at ${hits.length} place(s):\n` +
+        hits.map((hit) => `  - ${hit}`).join('\n') +
+        '\n\nThe matched text is deliberately not printed (build logs are public).\n' +
+        'Reword the line in UMWAYI, push, and rebuild.',
+    );
+  }
+  log(`Privacy check passed (${matchers.length} name${matchers.length === 1 ? '' : 's'} checked).`);
 }
 
 log(`Done: ${totalArticles} article(s), ${projectCount} project(s).`);
