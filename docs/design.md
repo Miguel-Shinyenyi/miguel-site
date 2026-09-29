@@ -8,7 +8,30 @@ not a finished conclusion presented as a portfolio.
 
 ## Current state
 
-**Superseded 2026-09-23.** Both 2026-09-22 revisions (mobile fixes plus a bolder accent, then
+**Replaced 2026-09-30.** The whole visual layer is now the 2026-09-29 redesign Miguel
+supplied at `~/Downloads/amwayi-site 2`, whose `docs/DESIGN.md` is its design system and
+whose `index.html`, `article.html` and `src/input.css` are the implementation this repo
+ports from. It replaces the 2026-09-23 direction rather than extending it, and says so
+directly: it names the previous look ("warm cream plus ochre plus Fraunces") as "the most
+common AI-generated premium look" and rules it out.
+
+What changed: a cool pasture canvas (`#EDEFE8`) with one amber accent (`#E9A23B`) instead of
+warm cream and ochre; Bricolage Grotesque, Geist, Geist Mono and Newsreader instead of
+Fraunces, Karla and JetBrains Mono, with Newsreader returning for long-form article body
+only; flat surfaces with 1px hairlines instead of the sticker hard-shadow treatment, with
+exactly one hard shadow left on the site (the primary CTA); a bento projects grid instead of
+a uniform card grid; and a documented motion system with a frequency gate, entrance reveals,
+a scroll-driven reading progress bar, a skip link, and explicit JS-off and reduced-motion
+requirements.
+
+What did not change: the information architecture (same section ids, same routes), the
+content pipeline from UMWAYI, the privacy guard, the RSS feed, the MailerLite sign-up and
+the Waline comments. The sections below describe the previous direction and are kept for
+the record; where they disagree with the 2026-09-29 system, the newer one wins.
+
+## Previous state (2026-09-23)
+
+**Superseded 2026-09-23, replaced entirely 2026-09-30.** Both 2026-09-22 revisions (mobile fixes plus a bolder accent, then
 a fuller mascot/hero built on top of it) are being replaced, not extended, by a complete
 design spec Miguel provided directly: `docs/redesign-spec-2026-09-23.md`, the canvas-mockup
 build notes he wrote and asked to be followed. This is a real replacement of the previous
@@ -242,6 +265,15 @@ checking claims against the rendered result rather than the code.
 | 2026-09-23 | Removed the one company name in this repo's own source: a `global.css` comment describing the sticker style. Reworded to describe the style itself. A repo-wide case-insensitive search (including `docs/`) found no other reference. Names in git history are left alone | Rewriting history was explicitly out of scope, and the history of a public repo is a different, much larger problem than a comment |
 | 2026-09-23 | Answered the standing question about Waline test comment objectId 3: it does **not** appear under the article on the live site, and the reason is a trailing slash. GitHub Pages 301-redirects `/miguel-site/tech/idempotency-keys` to `/miguel-site/tech/idempotency-keys/`, so `window.location.pathname` - which `Waline.astro` passes as the comment path - is the trailing-slash form in production. Confirmed live: the widget requests `path=/miguel-site/tech/idempotency-keys/` and renders "No comment yet", while the API returns 1 comment for the no-slash path and 0 for the trailing-slash one. The test comment was posted from `astro preview`, which serves the no-slash URL without redirecting, so it was filed under a path the live site never queries | Checked by loading the real deployed page and watching the request the widget actually makes, rather than inferring it from the config; the no-`trailingSlash` Astro default plus GitHub Pages' own directory redirect is not something the source alone tells you |
 | 2026-09-23 | Left the comment-path behaviour as-is rather than normalizing the trailing slash | Real visitors always arrive at the redirected trailing-slash URL, so real comments are filed and read consistently and nothing is broken for them today; the only orphan is a test comment. Worth knowing, though, that local `astro preview` and production write to *different* threads for the same article, so comment testing locally never touches the production thread. See the open question below on whether to normalize |
+| 2026-09-30 | Ported the 2026-09-29 redesign (`~/Downloads/amwayi-site 2`) in full: tokens, type, components, motion, the bento projects grid, the article template and every listing page. Markup, classes and copy come from the reference; the content is this site's real content from UMWAYI. Illustrations (hero shepherd, the four pillar stickers) were extracted from the reference file programmatically rather than retyped, so they are its drawings, not approximations | Third time this workflow has run, and the same rule held: the reference implementation is the source of truth, and "copy what it does" beats "approximate what it looks like" |
+| 2026-09-30 | **Preflight is on again.** It had been off since 2026-09-23 so this repo's hand-written base layer would not fight it, and that decision cost six separate bugs of one kind: an unlayered rule here beating a layered Tailwind/daisyUI rule regardless of specificity. The reference is built with `@import "tailwindcss"`, so porting its CSS with Preflight off would have reintroduced every one of them | The base layer that replaced Preflight is gone with the old design, so there was nothing left for Preflight to fight. This is the cheapest moment this decision will ever be reversible at, and it retires a bug class this log had to name six times |
+| 2026-09-30 | `global.css` is now imported by `tailwind.css` rather than separately by the layout, making the two one compilation unit like the reference's single `input.css` | Tailwind 4 resolves `@apply` against the theme in scope; in a separately-imported stylesheet there is none, and the build fails with "Cannot apply unknown utility class". Importing it into the entry file is the fix that matches how the reference is structured, rather than sprinkling `@reference` |
+| 2026-09-30 | Found and fixed a real bug the port introduced: the reference writes article paragraphs as direct children of `.prose-amwayi` and scopes its rule with `> p`. Here the markdown renders inside `.article-body`, whose `display: contents` removes it from the box tree but **not** from the DOM, so the child combinator matched nothing and every article paragraph silently fell back to Geist instead of Newsreader. Fixed by also matching `.prose-amwayi > .article-body > p`, keeping the top-level scoping the `>` was there to protect | Caught by measuring computed `font-family` on a rendered paragraph, not by reading the CSS. Newsreader for article body is one of the headline changes of this redesign, so it would have been a quiet loss of the main thing |
+| 2026-09-30 | Second port bug: `article-controls.js` wrapped code blocks in `class="code-panel sticker"`, carrying over the old design's hard-shadow helper. In the new system `.sticker` is the 96x72 pillar illustration tile, so every code panel collapsed to 96px wide. The wrapper is now `.code-panel` alone, and the Copy button uses a `.code-panel-copy` class instead of daisyUI button utilities | Same class name, completely different meaning between two design systems. Worth noting as the general hazard of a redesign that reuses vocabulary: the name survived the rewrite, the meaning did not |
+| 2026-09-30 | The bento grid takes four projects, not the reference's three. Settlement Engine is featured, spanning two columns and two rows with its illustration; the other three fill the remaining cells, one tinted, the last spanning the full width, so the grid has exactly as many cells as projects and no empty ones | The design system's rule is "exactly as many cells as projects... no empty cells", which the reference's own 3-cell layout cannot satisfy at four. Settlement Engine is the deepest of the four and the one the reference features. Miguel did not answer which to feature before implementation started, so this is a reasoned default, not a confirmed choice |
+| 2026-09-30 | Removed as genuinely dead rather than left as config: the `simple`/`backHref`/`backLabel` footer plumbing and the `variant` layout prop (the footer and navbar are uniform in this design, so none of them changed anything), and `EntryMeta.astro`, which nothing imported after the listing pages were restyled | A prop that no longer changes what renders is worse than no prop: it reads like a supported option |
+| 2026-09-30 | Quality gates from DESIGN.md checked by running them, not by reading the markup: no horizontal scroll at 375px on all 10 pages; content visible with JavaScript off (the `js` class gates the hidden entrance state, and a 2.5s failsafe removes it if the main script never runs); every entrance element visible immediately under `prefers-reduced-motion: reduce`; zero em or en dashes in rendered homepage text; the skip link is the first focusable element; and the pillar, hub, writing-tab, thought-bubble, theme-toggle, text-size, TOC and copy-link interactions all exercised | The gates are written as pass/fail conditions, so they were tested as pass/fail conditions |
+| 2026-09-30 | Noted, not fixed: Giscus returns 404 from its own discussions API on every article (`giscus.app/api/discussions?...&category=Announcements`), so the "Comments" heading renders above an empty widget. This predates the redesign and is a repository setting (Discussions not enabled, or no Announcements category), not site code | Out of scope for a visual port, and not this repo's to change. Waline underneath it works, so article pages still have working comments |
 | 2026-09-23 | Nine journal entries were live and listed on `/journal/`, but only three were reachable from the homepage: the Writing tabs show the three newest per section (the reference's own design) and nothing linked onward to the section indexes that already existed. Kept three per tab and added a link at the end of each tab's list to that section's index, labelled with the real count of non-draft entries ("All journal entries (9)"), computed from the collection rather than hardcoded | The tab limit wasn't the bug - the missing exit from it was. Counting at build time means the label can't drift out of date the way a hardcoded number would, which matters most for journal, the section that grows fastest |
 | 2026-09-23 | Those links use daisyUI's `link-hover` rather than the reference's bare `link` | The reference's "all articles" link is `link link-primary`, which underlines always; the brief asked for underline on hover only. A `no-underline` utility would not have worked: this build's layer order puts `daisyui` above `utilities`, so `.link`'s own underline outranks it. `link-hover` lives in the same layer as `.link`, so it wins on ordinary specificity. Verified computed: `none` at rest, `underline` on hover |
 | 2026-09-23 | The inner-page navbar's "Articles" link points at `/#writing`, the homepage's tabbed Writing block, which covers all three sections - so it never reached only one, and needed no fix. With the per-tab index links above, it now reaches every entry rather than only the nine most recent across three tabs | Recorded rather than changed, per the brief's "if it only reaches one, record what it does and fix it". Building a combined `/articles` index would have been a new page the brief didn't ask for, to solve a problem that turned out not to exist |
@@ -294,7 +326,14 @@ checking claims against the rendered result rather than the code.
   can actually send, so the promise is fulfillable rather than theoretical. What remains is
   a smaller operational question - on the free plan the send is manual, so the real risk is
   Miguel forgetting to send one, not the platform being unable to.
-- Whether to normalize the Waline comment path (strip the trailing slash before passing it
+- Which project should be featured in the bento grid. Settlement Engine is there now as a
+  reasoned default (deepest of the four, and the one the reference features), but it is a
+  content judgment, not a design one, and Miguel has not confirmed it.
+- Whether Giscus should stay at all, now that it 404s on every article and Waline sits
+  directly below it doing the same job. Enabling Discussions on the repo would fix it;
+  removing it would drop a duplicate comment box. Either is a real choice; leaving a broken
+  widget above a working one is not.
+- - Whether to normalize the Waline comment path (strip the trailing slash before passing it
   as the thread id) so `astro preview` and production share one thread per article. Nothing
   is broken for real visitors either way, since they all land on the redirected
   trailing-slash URL. The argument for doing it is that it's cheapest right now: there are

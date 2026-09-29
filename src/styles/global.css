@@ -1,585 +1,748 @@
-/* Base reset. Preflight is off (src/styles/tailwind.css), so this file
-   owns whatever base normalization the new design still needs, matched
-   against the reference implementation's src/input.css
-   (~/Downloads/amwayi-site) where it has an equivalent rule.
+/* Ported from the reference implementation's src/input.css
+   ("~/Downloads/amwayi-site 2", the 2026-09-29 redesign). Its own rules
+   are copied rather than approximated; anything below marked "this site
+   only" covers surfaces the static reference has no equivalent for
+   (markdown-rendered prose, shiki code blocks, the MailerLite embed, the
+   Waline widgets, open threads).
 
-   This element-level reset block lives in @layer base (order declared
-   once, first, in tailwind.css: theme, base, components, utilities), so
-   utility classes on the same element - mx-auto, mt-*, and the rest -
-   correctly outrank it. It used to be unlayered, which meant it won
-   against EVERY layered rule unconditionally regardless of order or
-   specificity, including utility classes applied directly to the same
-   element: the article illustration's <figure mx-auto> was stuck at the
-   left edge at wide viewports because this file's old unlayered
-   `figure { margin: 0 }` beat `.mx-auto`'s layered `margin-inline: auto`
-   outright. Verified fixed: the figure's left edge now lines up with the
-   title's at 1440/1920/2560.
+   Shape rule: interactive = full pill, containers = 12px, illustration
+   frames = 16px. Depth rule: flat surfaces and 1px hairlines. The only
+   hard shadow on the site is the primary CTA. */
 
-   Everything BELOW this block (.navbar a, .sticker, .pillar, etc) stays
-   unlayered on purpose: those are targeted, component-scoped overrides
-   that still need to unconditionally beat daisyUI's own layered rules
-   (the .btn-neutral text-color bug this comment used to describe), and
-   moving them into a layer would rank them below daisyUI's "daisyui"
-   layer and silently undo those fixes. Confirmed after this change:
-   .btn-neutral's text is still visible and the right color. */
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
-
   html {
     scroll-behavior: smooth;
   }
-
   body {
-    margin: 0;
+    @apply bg-base-100 text-base-content font-sans antialiased;
+    font-feature-settings: 'ss01';
   }
-
-  /* The UA stylesheet's default h1-h6/p margins were never zeroed with
-     Preflight off. Every section on this site lays headings and
-     paragraphs out with flex/grid `gap` (matching the reference, which
-     gets this for free from Preflight), so those UA margins stacked on
-     top of the gap instead of being replaced by it - confirmed by
-     comparing computed margins on the hero's h1/p against the reference
-     (0px there, ~14-51px here) and it visibly inflated the hero, pillars
-     and hub section heights. .prose-amwayi already zeroes its own p/li
-     margins for the same reason; this covers everywhere else. */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
-  figure,
-  dl,
-  dd {
-    margin: 0;
-  }
-
-  /* Ported from the reference's own @layer base rule (src/input.css:
-     "h1, h2, h3 { @apply font-display; }"), missing here until now: every
-     h1/h2/h3 across the site (hero, article titles, section headings) was
-     silently falling back to Karla (the body/sans font) instead of
-     Fraunces, since nothing set the display font by default and none of
-     the heading markup applied font-display explicitly either. */
   h1,
   h2,
   h3 {
-    font-family: var(--font-display);
+    @apply font-display;
+    font-optical-sizing: auto;
+    text-wrap: balance;
   }
-
-  /* fieldset (the pillars radio group) carries a browser-default border,
-     padding and min-width that Preflight normally resets; without it the
-     fieldset drew a visible box around the whole pillar grid. */
-  fieldset {
-    border: 0;
-    padding: 0;
-    margin: 0;
-    min-width: 0;
+  p {
+    text-wrap: pretty;
   }
-
-  /* :not(.hidden): kept even now that this is layered, since it's still
-     scoped narrowly on purpose - not because it needs to beat a layered
-     rule unconditionally anymore, but so a plain element selector here
-     doesn't fight .hidden's own display:none via ordinary specificity
-     either. */
-  img:not(.hidden),
-  svg:not(.hidden) {
-    display: block;
-    max-width: 100%;
-  }
-
   :target {
     scroll-margin-top: 6rem;
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-    *,
-    *::before,
-    *::after {
-      transition: none !important;
-      animation: none !important;
-    }
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-primary-content);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-base-content);
+    outline-offset: 3px;
+    border-radius: 6px;
   }
 }
 
-/* daisyUI assumes Preflight's own text-decoration reset is present; since
-   Preflight is off, buttons and badges built from <a> tags (.btn-neutral,
-   .btn-outline, etc. above) show the browser's default underline unless
-   targeted directly. Scoped to specific classes rather than a blanket `a`
-   reset, so .link's own underline (a real daisyUI feature) still works. */
-.btn,
-.badge,
-.step,
-.tab,
-.card {
-  text-decoration: none;
-}
-
-.navbar a,
-.menu a,
-.breadcrumbs a,
-a.card,
-.row-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Same unlayered-beats-layered problem as everywhere else in this file:
-   .navbar a/.menu a/.row-link's own `color: inherit` above permanently
-   overrode their `hover:text-primary` utility, since that utility lives
-   in a Tailwind layer. Verified against the reference with Playwright:
-   its nav links and article-listing rows go from ink to primary
-   (#9A5B1E) on hover, ours stayed ink at rgb(29,36,32) both states.
-   .breadcrumbs a and a.card need no equivalent rule - neither one has a
-   color hover in the reference either (breadcrumbs' color doesn't
-   change on hover there, and the Keep Reading a.card only lifts). */
-.navbar a:hover,
-.menu a:hover,
-.row-link:hover {
-  color: var(--color-primary);
-}
-
-/* ---- small text utilities the reference keeps as named tokens rather
-   than inline hex, reused the same way here ---- */
-
-.eyebrow {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--color-primary);
-}
-@media (min-width: 768px) {
+@layer components {
+  .text-muted {
+    color: var(--muted);
+  }
+  .text-soft {
+    color: var(--soft);
+  }
+  .bg-card {
+    background: var(--card);
+  }
+  .border-hairline {
+    border-color: var(--hairline);
+  }
   .eyebrow {
-    font-size: 0.875rem;
+    @apply text-[13px] font-semibold uppercase tracking-[0.12em];
+    color: var(--soft);
   }
-}
 
-.text-muted {
-  color: var(--muted);
-}
-.text-soft {
-  color: var(--soft);
-}
+  /* Links: ink text, amber underline. One accent, used everywhere. */
+  .link-amber {
+    @apply font-semibold underline underline-offset-4;
+    text-decoration-color: var(--color-primary);
+    text-decoration-thickness: 2px;
+    transition:
+      text-decoration-color var(--dur-fast) var(--ease-out),
+      text-underline-offset var(--dur-fast) var(--ease-out);
+  }
+  .link-amber:hover {
+    text-decoration-color: currentColor;
+    text-underline-offset: 6px;
+  }
 
-/* Sticker look: bold outline plus a hard offset shadow, used for
-   illustration panels, code blocks, callouts and cards. */
-.sticker {
-  border: 2px solid var(--color-ink);
-  box-shadow: 5px 5px 0 var(--color-ink);
-}
-.sticker-sm {
-  border: 2px solid var(--color-ink);
-  box-shadow: 3px 3px 0 var(--color-ink);
-}
+  /* Primary CTA: the single hard-shadow element. Press collapses it. */
+  .btn-cta {
+    @apply inline-flex min-h-12 select-none items-center justify-center gap-2 rounded-full px-6 text-base font-semibold;
+    background: var(--color-primary);
+    color: var(--color-primary-content);
+    border: 1.5px solid var(--cta-edge);
+    box-shadow: 3px 3px 0 var(--cta-edge);
+    transition:
+      translate var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .btn-cta:hover {
+    translate: -1px -1px;
+    box-shadow: 4px 4px 0 var(--cta-edge);
+  }
+  .btn-cta:active {
+    translate: 3px 3px;
+    box-shadow: 0 0 0 var(--cta-edge);
+    transition-duration: 60ms;
+  }
 
-/* Interactive stickered controls (Copy link, This helped) get their own
-   explicit hover: a static box-shadow declared here is unlayered CSS, so
-   it permanently outranks daisyUI's own layered .btn:hover shadow/border
-   response regardless of what that response computes (the same
-   cascade-layers bug class hit four times already), and a plain
-   background-color utility like bg-base-200 locks out daisyUI's
-   hover-responsive --btn-bg the same way. Verified empirically with
-   Playwright: before this rule, every computed style (background, shadow,
-   border, transform) was byte-identical at rest and on hover. Rather than
-   fight the cascade to route daisyUI's own hover through, this gives
-   these buttons a deliberate lift + deeper shadow, the same interaction
-   language the Keep Reading cards and the thought bubble already use. */
-.btn.sticker,
-.btn.sticker-sm {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.btn.sticker:hover {
-  transform: translateY(-2px);
-  box-shadow: 7px 7px 0 var(--color-ink);
-}
-.btn.sticker-sm:hover {
-  transform: translateY(-2px);
-  box-shadow: 5px 5px 0 var(--color-ink);
-}
+  .btn-quiet {
+    @apply inline-flex min-h-12 select-none items-center justify-center gap-2 rounded-full border px-6 text-base font-semibold;
+    border-color: var(--field-edge);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      scale var(--dur-fast) var(--ease-out);
+  }
+  .btn-quiet:hover {
+    background: var(--color-base-200);
+  }
+  .btn-quiet:active,
+  .icon-btn:active,
+  .press:active {
+    scale: 0.97;
+  }
 
-/* ---- pillars: radio cards. The checked card turns dark, and one shared
-   "in practice" line below the grid shows the matching pillar's text.
-   #pillars wraps the whole block (fieldset + practice box). ---- */
+  .icon-btn {
+    @apply inline-grid size-11 place-items-center rounded-full border;
+    border-color: var(--hairline);
+    background: var(--card);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      scale var(--dur-fast) var(--ease-out);
+  }
+  .icon-btn:hover {
+    background: var(--color-base-200);
+  }
 
-.pillar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  border-radius: var(--radius-box);
-  background: var(--color-base-100);
-  padding: 1.5rem;
-  cursor: pointer;
-  text-align: left;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-@media (min-width: 768px) {
+  /* Theme icons: stacked, crossfade with a small rotate. */
+  .theme-icons {
+    display: grid;
+  }
+  .theme-icons > * {
+    grid-area: 1 / 1;
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      rotate var(--dur-base) var(--ease-out),
+      scale var(--dur-base) var(--ease-out);
+  }
+  [data-theme='nightwatch'] .icon-moon,
+  :root:not([data-theme='nightwatch']) .icon-sun {
+    opacity: 0;
+    rotate: -60deg;
+    scale: 0.6;
+  }
+
+  /* Illustration frames: textbook outline, no shadow. */
+  .frame {
+    border: 2px solid var(--cta-edge);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  [data-theme='nightwatch'] .frame {
+    border-color: #3e4740;
+  }
+
+  /* Pillars: radio cards. Checked card turns ink. */
   .pillar {
-    gap: 1rem;
-    padding: 2rem;
+    @apply flex cursor-pointer flex-col gap-4 rounded-box border p-6 text-left;
+    border-color: var(--hairline);
+    background: var(--card);
+    transition:
+      background-color var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out),
+      translate var(--dur-base) var(--ease-out);
   }
-}
-.pillar:has(input:checked) {
-  background: var(--color-neutral);
-  color: var(--color-neutral-content);
-}
-.pillar:has(input:checked) .pillar-body {
-  color: #c9cec6;
-}
-.pillar:has(input:checked) .pillar-num {
-  color: var(--color-ochre-light);
-}
-.pillar:has(input:focus-visible) {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 3px;
-}
-
-.practice {
-  display: none;
-}
-#pillars:has(input[value='1']:checked) .practice-1,
-#pillars:has(input[value='2']:checked) .practice-2,
-#pillars:has(input[value='3']:checked) .practice-3,
-#pillars:has(input[value='4']:checked) .practice-4 {
-  display: block;
-}
-
-/* ---- hub explorer: light up the SVG node matching the checked tab.
-   #hub is the whole section; .hub-node/.node-X live on the SVG <g>. ---- */
-
-.hub-node circle {
-  fill: #2a332e;
-  stroke: #4a5650;
-  transition: fill 0.2s;
-}
-.hub-node text {
-  fill: #f3eee3;
-}
-#hub:has(input[value='journal']:checked) .node-journal circle,
-#hub:has(input[value='philosophy']:checked) .node-philosophy circle,
-#hub:has(input[value='tech']:checked) .node-tech circle,
-#hub:has(input[value='people']:checked) .node-people circle,
-#hub:has(input[value='projects']:checked) .node-projects circle {
-  fill: var(--color-ochre-light);
-  stroke: var(--color-ochre-light);
-}
-#hub:has(input[value='journal']:checked) .node-journal text,
-#hub:has(input[value='philosophy']:checked) .node-philosophy text,
-#hub:has(input[value='tech']:checked) .node-tech text,
-#hub:has(input[value='people']:checked) .node-people text,
-#hub:has(input[value='projects']:checked) .node-projects text {
-  fill: #1d2420;
-}
-
-/* ---- shiki code blocks, mapped onto the neutral (dark) daisyUI tokens so
-   a code sample reads like a dark terminal panel regardless of the active
-   theme, matching the reference's own dark code panel. A literal daisyUI
-   `mockup-code` remap of shiki's own output would need a custom rehype
-   plugin; this gets the same terminal-panel read with plain CSS on
-   shiki's existing markup instead (see docs/design.md's decisions log). */
-
-.code-panel {
-  margin: 1.75rem 0;
-  border-radius: 1rem;
-  /* Without this, the header bar's and <pre>'s own square corners poked
-     past the panel's rounded border, visible as a mismatch at the top
-     corners under the offset shadow (.sticker, applied alongside this
-     class). Verified by zooming a screenshot. */
-  overflow: hidden;
-}
-
-.code-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.4rem 1rem 0.4rem 1.25rem;
-  background: #2a332e;
-  color: var(--color-neutral-content);
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-}
-
-.code-panel pre.astro-code {
-  margin: 0;
-  border: none;
-  border-radius: 0;
-}
-
-pre.astro-code {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  line-height: 1.7;
-  padding: 1rem;
-  overflow-x: auto;
-
-  --astro-code-color-background: var(--color-ink);
-  --astro-code-color-text: var(--color-neutral-content);
-  --astro-code-token-comment: color-mix(in srgb, var(--color-neutral-content) 60%, transparent);
-  --astro-code-token-string: var(--color-secondary);
-  --astro-code-token-string-expression: var(--color-secondary);
-  --astro-code-token-punctuation: var(--color-neutral-content);
-  --astro-code-token-keyword: var(--color-ochre-light);
-  --astro-code-token-function: var(--color-accent);
-  --astro-code-token-constant: var(--color-accent);
-  --astro-code-token-parameter: var(--color-neutral-content);
-  --astro-code-token-link: var(--color-neutral-content);
-}
-
-/* Phone gets 16px side padding and a 12.5px font (verified with Playwright:
-   the panel is 331px wide at a 375px viewport with 24px padding, room for
-   about 32 characters; these two changes make every 40-char diagram in
-   UMWAYI's content fit with no sideways scroll, while real code lines
-   still scroll inside their own panel as they should). Desktop keeps the
-   roomier values. */
-@media (min-width: 768px) {
-  pre.astro-code {
-    font-size: 0.9rem;
-    padding: 1.25rem 1.5rem;
+  .pillar:hover {
+    translate: 0 -2px;
   }
-}
+  .pillar:has(input:checked) {
+    background: var(--color-base-content);
+    color: var(--color-base-100);
+    border-color: var(--color-base-content);
+    translate: 0 0;
+  }
+  .pillar:has(input:checked) .pillar-body {
+    color: color-mix(in oklab, var(--color-base-100) 78%, transparent);
+  }
+  .pillar:has(input:focus-visible) {
+    outline: 2px solid var(--color-base-content);
+    outline-offset: 3px;
+  }
+  .sticker {
+    @apply grid h-[72px] w-[96px] shrink-0 place-items-center rounded-[12px] border-[1.5px];
+    background: #fbfbf7;
+    border-color: #1e2520;
+  }
 
-/* ---- prose-amwayi: the one surface markdown renders into directly, so
-   Tailwind utility classes can't reach it without a rehype plugin. Fraunces
-   for headings, Karla for body text. Text size is CSS-only, set by a radio
-   group in the sidebar (#size-s/#size-m/#size-l), matching the reference,
-   no JS needed for this control. ---- */
+  /* Practice line: all lines share one grid cell and crossfade. */
+  .practice-stack {
+    display: grid;
+  }
+  .practice {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 6px;
+    filter: blur(3px);
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      translate var(--dur-base) var(--ease-out),
+      filter var(--dur-base) var(--ease-out),
+      visibility 0s linear var(--dur-base);
+  }
+  #pillars:has(input[value='1']:checked) .practice-1,
+  #pillars:has(input[value='2']:checked) .practice-2,
+  #pillars:has(input[value='3']:checked) .practice-3,
+  #pillars:has(input[value='4']:checked) .practice-4 {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+    filter: none;
+    transition-delay: 60ms, 60ms, 60ms, 0s;
+  }
 
-.prose-amwayi {
-  --fs: 17px;
-  font-family: var(--font-sans);
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
+  /* Hub diagram: selected node and its spoke light up together. */
+  .hub-node circle {
+    fill: var(--card);
+    stroke: var(--cta-edge);
+    stroke-width: 1.5;
+    transition: fill var(--dur-base) var(--ease-out);
+  }
+  [data-theme='nightwatch'] .hub-node circle {
+    stroke: #4a544c;
+  }
+  .hub-node text {
+    fill: var(--color-base-content);
+  }
+  .spoke {
+    stroke: var(--hairline);
+    stroke-width: 2;
+    transition: stroke var(--dur-base) var(--ease-out);
+  }
+  #hub:has(input[value='journal']:checked) .node-journal circle,
+  #hub:has(input[value='philosophy']:checked) :is(.node-philosophy, .node-journal) circle,
+  #hub:has(input[value='tech']:checked) :is(.node-tech, .node-journal) circle,
+  #hub:has(input[value='people']:checked) :is(.node-people, .node-journal) circle,
+  #hub:has(input[value='projects']:checked) :is(.node-projects, .node-journal) circle {
+    fill: var(--color-primary);
+  }
+  #hub:has(input[value='journal']:checked) .node-journal text,
+  #hub:has(input[value='philosophy']:checked) :is(.node-philosophy, .node-journal) text,
+  #hub:has(input[value='tech']:checked) :is(.node-tech, .node-journal) text,
+  #hub:has(input[value='people']:checked) :is(.node-people, .node-journal) text,
+  #hub:has(input[value='projects']:checked) :is(.node-projects, .node-journal) text {
+    fill: var(--color-primary-content);
+  }
+  #hub:has(input[value='journal']:checked) .spoke,
+  #hub:has(input[value='philosophy']:checked) .spoke-philosophy,
+  #hub:has(input[value='tech']:checked) .spoke-tech,
+  #hub:has(input[value='people']:checked) .spoke-people,
+  #hub:has(input[value='projects']:checked) .spoke-projects {
+    stroke: var(--color-primary);
+  }
+  #hub:has(input[value='journal']:checked) .hub-journal,
+  #hub:has(input[value='philosophy']:checked) .hub-philosophy,
+  #hub:has(input[value='tech']:checked) .hub-tech,
+  #hub:has(input[value='people']:checked) .hub-people,
+  #hub:has(input[value='projects']:checked) .hub-projects {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+    filter: none;
+    transition-delay: 60ms, 60ms, 60ms, 0s;
+  }
 
-/* The markdown Content component renders into this wrapper div rather
-   than directly as .prose-amwayi's children (so the component stays a
-   clean injection point); display:contents removes it from the box model
-   so its paragraphs/headings still act as direct flex children and get
-   .prose-amwayi's own gap rhythm, matching the reference exactly. */
-.article-body {
-  display: contents;
-}
-@media (min-width: 768px) {
+  /* Pill tabs: hairline default, ink fill active. */
+  .pill-tab {
+    @apply h-11 cursor-pointer rounded-full border px-5 text-[15px] font-semibold;
+    border-color: var(--hairline);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .pill-tab:hover {
+    border-color: var(--field-edge);
+  }
+  .pill-tab:checked,
+  .pill-tab[aria-selected='true'],
+  .pill-tab:has(input:checked) {
+    background: var(--color-base-content);
+    color: var(--color-base-100);
+    border-color: var(--color-base-content);
+  }
+  .pill-tab:has(input:focus-visible) {
+    outline: 2px solid var(--color-base-content);
+    outline-offset: 3px;
+  }
+  /* daisyUI dims inactive tabs to ~50%. That fails contrast, so restore ink. */
+  .tabs .tab.pill-tab {
+    color: var(--color-base-content);
+    opacity: 1;
+    --tab-bg: transparent;
+  }
+  .tabs .tab.pill-tab:checked {
+    color: var(--color-base-100);
+  }
+
+  /* Article rows: arrow slides in on hover. */
+  .row-link {
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .row-link .row-arrow {
+    opacity: 0;
+    translate: -6px 0;
+    transition:
+      opacity var(--dur-fast) var(--ease-out),
+      translate var(--dur-fast) var(--ease-out);
+  }
+  .row-link:hover .row-arrow,
+  .row-link:focus-visible .row-arrow {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* Bento tiles */
+  .tile {
+    @apply flex flex-col rounded-box border;
+    border-color: var(--hairline);
+    transition:
+      translate var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+  .tile:hover {
+    translate: 0 -2px;
+    border-color: var(--field-edge);
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-[13px] font-medium;
+    border-color: var(--hairline);
+  }
+
+  /* Form field */
+  .field {
+    @apply min-h-12 w-full rounded-full px-5 text-base outline-none;
+    background: #f8f9f4;
+    color: #1e2520;
+    border: 1.5px solid #f8f9f4;
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .field::placeholder {
+    color: #5a6057;
+  }
+  .field:focus-visible {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-primary) 35%, transparent);
+  }
+  .field[aria-invalid='true'] {
+    border-color: #e58a7f;
+  }
+
+  /* Article reading: Newsreader, 65-72 characters per line */
   .prose-amwayi {
     --fs: 19px;
-    gap: 26px;
+    max-width: 68ch;
   }
-}
-body:has(#size-s:checked) .prose-amwayi {
-  --fs: 15px;
-}
-body:has(#size-l:checked) .prose-amwayi {
-  --fs: 21px;
-}
-@media (min-width: 768px) {
+  @media (min-width: 768px) {
+    .prose-amwayi {
+      --fs: 20px;
+    }
+  }
   body:has(#size-s:checked) .prose-amwayi {
     --fs: 17px;
   }
   body:has(#size-l:checked) .prose-amwayi {
-    --fs: 21px;
+    --fs: 23px;
   }
-}
-
-.prose-amwayi p,
-.prose-amwayi li {
-  font-size: var(--fs);
-  line-height: 1.75;
-  margin: 0;
-}
-.prose-amwayi ul,
-.prose-amwayi ol {
-  max-width: 68ch;
-  padding-left: 1.25em;
-}
-.prose-amwayi .lead {
-  font-family: var(--font-display);
-  font-size: calc(var(--fs) + 4px);
-  line-height: 1.55;
-}
-.prose-amwayi h2 {
-  font-family: var(--font-display);
-  font-size: 27px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
-  margin-top: 1.5rem;
-}
-@media (min-width: 768px) {
+  /* The reference writes article paragraphs as direct children of
+     .prose-amwayi, so its rule is `> p`. Here the markdown renders inside
+     .article-body, and `display: contents` takes that wrapper out of the
+     box tree but NOT out of the DOM, so a child combinator still misses
+     every paragraph: without this second selector the body silently falls
+     back to Geist instead of Newsreader. Still scoped to top-level
+     paragraphs, so a <p> inside the author box or a callout is untouched,
+     which is what the reference's `>` was protecting. */
+  .prose-amwayi > p,
+  .prose-amwayi > .article-body > p,
+  .prose-amwayi li {
+    font-family: var(--font-read);
+    font-size: var(--fs);
+    line-height: 1.7;
+  }
+  .prose-amwayi .lead {
+    font-size: calc(var(--fs) + 3px);
+    line-height: 1.55;
+    color: var(--color-base-content);
+  }
   .prose-amwayi h2 {
-    font-size: 2.25rem;
+    @apply mt-8 font-display text-[26px] font-semibold leading-tight tracking-[-0.015em] md:text-[32px];
+  }
+  .toc-link {
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .toc-link[aria-current='true'] {
+    background: var(--color-base-300);
+    font-weight: 600;
+  }
+
+  /* Reading progress: CSS scroll-driven, no scroll listeners. */
+  .read-progress {
+    display: none;
+  }
+  @supports (animation-timeline: scroll()) {
+    .read-progress {
+      display: block;
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 3px;
+      z-index: 50;
+      background: var(--color-primary);
+      transform-origin: 0 50%;
+      animation: read-grow linear both;
+      animation-timeline: scroll(root);
+    }
   }
 }
-.prose-amwayi h3 {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-.prose-amwayi a {
-  color: var(--color-primary);
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-}
-.prose-amwayi code:not(pre code) {
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-  background: var(--color-base-300);
-  padding: 0.15em 0.4em;
-  border-radius: 0.35em;
-}
-.prose-amwayi blockquote {
-  margin: 0.5rem 0;
-  padding: 1.5rem 0;
-  border-top: 2px solid var(--color-base-content);
-  border-bottom: 2px solid var(--color-base-content);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.5rem;
-  line-height: 1.3;
-  text-align: center;
-}
-@media (min-width: 768px) {
+
+/* ---- this site only: surfaces the static reference has no equivalent
+   for, styled to the same system ---- */
+@layer components {
+  /* Markdown prose the reference hand-writes as static HTML. */
+  .article-body {
+    display: contents;
+  }
+  .prose-amwayi h3 {
+    @apply font-display text-[21px] font-semibold leading-snug tracking-[-0.01em] md:text-[24px];
+  }
+  .prose-amwayi a:not(.link-amber) {
+    @apply font-semibold underline underline-offset-4;
+    text-decoration-color: var(--color-primary);
+    text-decoration-thickness: 2px;
+  }
+  .prose-amwayi code:not(pre code) {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--color-base-300);
+    padding: 0.15em 0.4em;
+    border-radius: 0.35em;
+  }
   .prose-amwayi blockquote {
-    font-size: 2rem;
+    @apply rounded-box border px-6 py-5 font-display text-[22px] font-medium leading-snug md:text-[26px];
+    border-color: var(--hairline);
+    background: var(--card);
   }
-}
+  .prose-amwayi blockquote p {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
 
-/* ---- MailerLite sign-up (footer). Everything here is scoped to the
-   embed's own container so none of it can reach the rest of the site, and
-   it exists only to keep MailerLite's class hooks from changing the look:
-   the site owns the styling, its script owns the behaviour. ---- */
+  /* Callout: note tint, hairline border, no colored left border. */
+  .callout {
+    @apply rounded-box border px-5 py-4;
+    border-color: var(--hairline);
+    background: var(--note);
+  }
 
-/* Success replaces the form, driven by the class ml_webform_success_*
-   adds (see Footer.astro), not by inline display, so daisyUI's own .alert
-   display stays intact instead of being flattened to block. */
-#mlb2-46272821 .row-success {
-  display: none;
-}
-#mlb2-46272821.ml-submitted .row-success {
-  display: grid;
-}
-#mlb2-46272821.ml-submitted .row-form {
-  display: none;
-}
+  /* Code panel: ink surface in both themes, file-name bar, Copy button. */
+  .code-panel {
+    @apply overflow-hidden rounded-box border;
+    border-color: var(--hairline);
+    margin: 0;
+  }
+  .code-panel-header {
+    @apply flex items-center justify-between px-4 py-2 font-mono text-[13px];
+    background: #262d28;
+    color: #e8ebe3;
+    border-bottom: 1px solid #333b35;
+  }
+  .code-panel-copy {
+    @apply rounded-full border px-3 py-1 text-[12px] font-medium;
+    border-color: #4a544c;
+    color: #e8ebe3;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      scale var(--dur-fast) var(--ease-out);
+  }
+  .code-panel-copy:hover {
+    background: #333b35;
+  }
+  .code-panel-copy:active {
+    scale: 0.97;
+  }
+  .code-panel pre.astro-code {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+  }
+  pre.astro-code {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    padding: 1rem;
+    overflow-x: auto;
 
-/* .loading is MailerLite's hook for the in-flight button, and also
-   daisyUI's spinner component, which would otherwise replace the button's
-   face with a spinning mask. Neutralized here so the button just keeps its
-   shape while the request is in flight. */
-#mlb2-46272821 .btn.loading {
-  mask-image: none;
-  -webkit-mask-image: none;
-  background-image: none;
-  animation: none;
-  width: auto;
-  height: auto;
-}
+    --astro-code-color-background: #1e2520;
+    --astro-code-color-text: #e8ebe3;
+    --astro-code-token-comment: #9aa196;
+    --astro-code-token-string: #9cc39a;
+    --astro-code-token-string-expression: #9cc39a;
+    --astro-code-token-punctuation: #e8ebe3;
+    --astro-code-token-keyword: #f0ae4e;
+    --astro-code-token-function: #8eb8d6;
+    --astro-code-token-constant: #f0ae4e;
+    --astro-code-token-parameter: #e8ebe3;
+    --astro-code-token-link: #e8ebe3;
+  }
+  /* Phone: 16px side padding and a 12.5px font keep every 40-character
+     diagram in UMWAYI's content inside the panel with no sideways
+     scroll, while real code still scrolls inside its own panel. */
+  @media (min-width: 768px) {
+    pre.astro-code {
+      font-size: 0.9rem;
+      padding: 1.25rem 1.5rem;
+    }
+  }
 
-/* MailerLite needs the input wrapped in .ml-field-group, which the old
-   markup didn't have. As a block box wrapping an inline-flex input it
-   added a baseline line box: 50px tall around a 48px input, which shifted
-   the whole joined row and made the phone footer 2px taller. Flex removes
-   the line box so the wrapper is exactly the input. */
-#mlb2-46272821 .ml-field-group {
-  display: flex;
-  /* As a .join child it also picks up daisyUI's own 1px join-item border,
-     on top of the input's. Border-box made that a 50px wrapper around a
-     48px input, growing the joined row by 2px. The input carries the
-     visible border; the wrapper is only a hook for MailerLite's script. */
-  border: 0;
-}
-
-/* MailerLite's script adds .ml-error to the field group for a bad
-   address; the message is otherwise hidden. */
-#mlb2-46272821 .ml-error-message {
-  display: none;
-}
-#mlb2-46272821 .ml-block-form:has(.ml-field-group.ml-error) .ml-error-message {
-  display: grid;
-}
-#mlb2-46272821 .ml-field-group.ml-error .input {
-  border-color: var(--color-error);
-}
-
-.toc-link[aria-current='true'] {
-  background: var(--color-base-300);
-  font-weight: 700;
-}
-
-/* ---- takeaways: the numbered list at the end of every article/project
-   body's "## What I took from it" section (UMWAYI's site/README.md body
-   rule), styled with the reference's numbered badge-accent circles via a
-   CSS counter rather than a rehype plugin: Astro's own heading-slug
-   pipeline already turns that heading into id="what-i-took-from-it" (a
-   plain lowercase-and-hyphenate slug, no punctuation in the heading text
-   to complicate it), so `+ ol` alone reaches the very next markdown
-   element, the numbered list itself. ---- */
-
-#what-i-took-from-it + ol {
-  list-style: none;
-  counter-reset: takeaway;
-  padding-left: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-}
-/* li used to be `display: flex`, which turns every text run and every
-   inline element inside it (a bare word run, then a <code> span, then
-   another word run) into its own flex column, laid out side by side
-   instead of wrapping as one sentence. On "Every path needs an exit to
-   `UNKNOWN`, including a crash." this split the sentence into three
-   columns instead of wrapping normally. `display: block` plus the badge
-   pulled out of flow with `position: absolute` puts the sentence back on
-   normal lines while keeping the badge pinned to the first line. */
-#what-i-took-from-it + ol li {
-  counter-increment: takeaway;
-  position: relative;
-  display: block;
-  padding-left: 46px;
-  min-height: 30px;
-}
-@media (min-width: 768px) {
+  /* Takeaways: numbered amber badges, block layout so a sentence with
+     inline code wraps as one sentence instead of splitting into flex
+     columns. */
+  #what-i-took-from-it + ol {
+    @apply flex list-none flex-col gap-3.5 p-0;
+    counter-reset: takeaway;
+  }
   #what-i-took-from-it + ol li {
-    padding-left: 50px;
-    min-height: 34px;
+    counter-increment: takeaway;
+    position: relative;
+    display: block;
+    padding-left: 46px;
+    min-height: 30px;
   }
-}
-#what-i-took-from-it + ol li::before {
-  content: counter(takeaway);
-  position: absolute;
-  left: 0;
-  top: -2px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  border: 2px solid var(--color-ink);
-  background: var(--color-accent);
-  color: var(--color-accent-content);
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-@media (min-width: 768px) {
+  @media (min-width: 768px) {
+    #what-i-took-from-it + ol li {
+      padding-left: 50px;
+      min-height: 34px;
+    }
+  }
   #what-i-took-from-it + ol li::before {
-    width: 34px;
-    height: 34px;
+    content: counter(takeaway);
+    position: absolute;
+    left: 0;
     top: -2px;
+    @apply inline-flex size-[30px] items-center justify-center rounded-full border text-[15px] font-bold md:size-[34px];
+    border-color: var(--cta-edge);
+    background: var(--color-primary);
+    color: var(--color-primary-content);
+  }
+
+  /* MailerLite sign-up: the site owns the styling, its script owns the
+     behaviour, so everything here is scoped to the embed's container. */
+  #mlb2-46272821 .row-success {
+    display: none;
+  }
+  #mlb2-46272821.ml-submitted .row-success {
+    display: block;
+  }
+  #mlb2-46272821.ml-submitted .row-form {
+    display: none;
+  }
+  #mlb2-46272821 .ml-field-group {
+    display: flex;
+    border: 0;
+  }
+  #mlb2-46272821 .ml-error-message {
+    display: none;
+  }
+  #mlb2-46272821 .ml-block-form:has(.ml-field-group.ml-error) .ml-error-message {
+    display: block;
+  }
+  #mlb2-46272821 .ml-field-group.ml-error .field {
+    border-color: var(--color-error);
+  }
+
+  .comments,
+  .guest-comments {
+    margin-top: 3rem;
   }
 }
 
-/* ---- comments (giscus / waline), carried forward from the previous
-   revision, unstyled beyond spacing since they render their own UI. ---- */
+/* ------------------------------------------------------------------
+   MOTION
+   Frequency gate: entrances run once (rare), swaps are fast
+   (occasional), nav and forms stay near-instant. Transform, opacity and
+   filter only.
+   ------------------------------------------------------------------ */
+@keyframes read-grow {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+    translate: 0 -4px;
+  }
+}
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+    filter: blur(3px);
+  }
+}
 
-.comments,
-.guest-comments {
-  margin-top: 3rem;
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    translate: 0 16px;
+    filter: blur(4px);
+    transition:
+      opacity var(--dur-slow) var(--ease-out),
+      translate var(--dur-slow) var(--ease-out),
+      filter var(--dur-slow) var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+  .js [data-reveal].is-in {
+    opacity: 1;
+    translate: 0 0;
+    filter: none;
+  }
+
+  .js .thought-dot {
+    opacity: 0;
+    scale: 0.6;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      opacity 260ms var(--ease-out),
+      scale 260ms var(--ease-out);
+  }
+  .js .hero-art.is-in .thought-dot {
+    opacity: 1;
+    scale: 1;
+  }
+  .js .hero-art.is-in .thought-dot:nth-of-type(1) {
+    transition-delay: 420ms;
+  }
+  .js .hero-art.is-in .thought-dot:nth-of-type(2) {
+    transition-delay: 340ms;
+  }
+  .js .hero-art.is-in .thought-dot:nth-of-type(3) {
+    transition-delay: 260ms;
+  }
+  .js .bubble {
+    opacity: 0;
+    scale: 0.92;
+    filter: blur(4px);
+    transform-origin: 88% 100%;
+    transition:
+      opacity 420ms var(--ease-out) 520ms,
+      scale 520ms var(--ease-out) 520ms,
+      filter 420ms var(--ease-out) 520ms,
+      translate var(--dur-fast) var(--ease-out);
+  }
+  .js .hero-art.is-in .bubble {
+    opacity: 1;
+    scale: 1;
+    filter: none;
+  }
+  .bubble:hover {
+    translate: 0 -2px;
+  }
+  .bubble:active {
+    scale: 0.98;
+  }
+
+  .thought-text {
+    display: inline-block;
+    transition:
+      opacity 200ms var(--ease-out),
+      filter 200ms var(--ease-out),
+      translate 200ms var(--ease-out);
+  }
+  .thought-text.is-out {
+    opacity: 0;
+    filter: blur(4px);
+    translate: 0 -4px;
+    transition-duration: 120ms;
+  }
+
+  .tab-content {
+    animation: tab-in var(--dur-base) var(--ease-out);
+  }
+  .dropdown[open] .dropdown-content {
+    transform-origin: top right;
+    animation: pop-in 160ms var(--ease-out);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  /* The progress bar follows the reader's own scroll, so it stays. */
+  .read-progress {
+    animation-duration: auto !important;
+  }
+  .pillar:hover,
+  .tile:hover,
+  .btn-cta:hover {
+    translate: none;
+  }
+}
+
+/* Phone: pillar cards become compact rows. */
+@media (max-width: 639px) {
+  .pillar {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 16px;
+    row-gap: 8px;
+    align-items: center;
+    padding: 16px;
+  }
+  .pillar .sticker {
+    width: 64px;
+    height: 48px;
+    border-radius: 10px;
+  }
+  .pillar .sticker svg {
+    width: 60px;
+    height: 44px;
+  }
+  .pillar .pillar-body {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Sheep head keeps an edge on dark hills. */
+[data-theme='nightwatch'] :is(.hero-art, #projects) ellipse[fill='#2A2A2A'] {
+  stroke: #8c9285;
+  stroke-width: 1.5;
 }

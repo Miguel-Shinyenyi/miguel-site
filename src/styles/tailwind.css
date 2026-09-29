@@ -1,128 +1,130 @@
-/* Tailwind 4 / daisyUI 5, matched against the real reference implementation
-   at ~/Downloads/amwayi-site (src/input.css), not just
-   docs/redesign-spec-2026-09-23.md's markup samples.
+/* Tailwind 4 / daisyUI 5, ported from the reference implementation's
+   src/input.css at "~/Downloads/amwayi-site 2" (the 2026-09-29 redesign),
+   which is the source of truth for tokens, type and components.
 
-   Preflight is skipped on purpose: importing "tailwindcss" as a single
-   import pulls in Preflight's base reset, which would fight global.css's
-   own hand-written base styles. Tailwind 4's documented way to opt out is
-   importing the theme and utilities layers individually instead of the
-   combined import.
-
-   This order statement must be the first @layer anything in the whole
-   built stylesheet (tailwind.css loads before global.css - see
-   BaseLayout.astro): it's what fixes global.css's element-level base
-   reset (h1-h6/p/figure/dl/dd margins, etc, now wrapped in @layer base
-   there) permanently losing to Tailwind utility classes like mx-auto on
-   the same element, which is what was pinning the article illustration
-   to the left at wide viewports. Layer order ranks utilities above base
-   regardless of source order or specificity once both sides are
-   layered, which is the whole point: unlike global.css's other,
-   deliberately-unlayered component-scoped overrides further down that
-   file (.navbar a, .sticker, etc), which still need to unconditionally
-   beat daisyUI's own layered rules and so stay outside any layer. */
-@layer theme, base, components, utilities;
-
-@import 'tailwindcss/theme' layer(theme);
-@import 'tailwindcss/utilities' layer(utilities);
+   Preflight is ON here, unlike every revision before this one. It was off
+   from 2026-09-23 so this repo's hand-written base layer wouldn't fight
+   it, and that cost six separate bugs of one kind: an unlayered rule here
+   beating a layered Tailwind/daisyUI rule regardless of specificity
+   (invisible button text, missing badge outlines, both theme icons at
+   once, a bordered fieldset, heading fonts and margins, dead hover
+   colors). The reference is built with Preflight on, so porting its CSS
+   while keeping it off would reintroduce all of it. The base layer that
+   replaced Preflight is gone with the old design, so there is nothing
+   left for it to fight. */
+@import 'tailwindcss';
+/* One compilation unit, like the reference's single input.css: global.css
+   uses @apply, which needs the theme in scope. Importing it here rather
+   than separately in BaseLayout is what puts it there. */
+@import './global.css';
 
 @plugin 'daisyui' {
-  themes: pasture --default, nightwatch --prefersdark;
+  themes: false;
 }
 
 @plugin 'daisyui/theme' {
   name: 'pasture';
   default: true;
   color-scheme: light;
-  --color-base-100: #f3eee3;
-  --color-base-200: #fbf8f1;
-  --color-base-300: #e6decd;
-  --color-base-content: #1d2420;
-  --color-primary: #9a5b1e;
-  --color-primary-content: #fbf8f1;
-  --color-secondary: #3f5a3c;
-  --color-secondary-content: #f3eee3;
-  --color-accent: #e0a965;
-  --color-accent-content: #1d2420;
-  --color-neutral: #1d2420;
-  --color-neutral-content: #f3eee3;
-  --color-info: #2f5d7c;
-  --color-info-content: #ffffff;
-  --color-success: #3f5a3c;
-  --color-success-content: #f3eee3;
-  --color-warning: #c08a3e;
-  --color-warning-content: #1d2420;
-  --color-error: #b23a2e;
-  --color-error-content: #ffffff;
-  --radius-box: 1.25rem;
+  --color-base-100: #edefe8;
+  --color-base-200: #e3e6dc;
+  --color-base-300: #d6dacd;
+  --color-base-content: #1e2520;
+  --color-primary: #e9a23b;
+  --color-primary-content: #1e2520;
+  --color-secondary: #2e5638;
+  --color-secondary-content: #f4f6ef;
+  --color-accent: #e9a23b;
+  --color-accent-content: #1e2520;
+  --color-neutral: #1e2520;
+  --color-neutral-content: #edefe8;
+  --color-info: #1f5f85;
+  --color-info-content: #f4f6ef;
+  --color-success: #2e5638;
+  --color-success-content: #f4f6ef;
+  --color-warning: #e9a23b;
+  --color-warning-content: #1e2520;
+  --color-error: #a8322a;
+  --color-error-content: #f4f6ef;
+  --radius-box: 0.75rem;
   --radius-field: 999px;
   --radius-selector: 999px;
-  --border: 1.5px;
+  --border: 1px;
   --depth: 0;
   --noise: 0;
 }
 
 @plugin 'daisyui/theme' {
   name: 'nightwatch';
+  prefersdark: true;
   color-scheme: dark;
-  --color-base-100: #141a17;
-  --color-base-200: #1b221e;
-  --color-base-300: #2e3732;
-  --color-base-content: #eee8db;
-  --color-primary: #e0a965;
-  --color-primary-content: #141a17;
+  --color-base-100: #131815;
+  --color-base-200: #1a201c;
+  --color-base-300: #262d28;
+  --color-base-content: #e8ebe3;
+  --color-primary: #f0ae4e;
+  --color-primary-content: #131815;
   --color-secondary: #9cc39a;
-  --color-secondary-content: #141a17;
-  --color-accent: #e0a965;
-  --color-accent-content: #141a17;
-  --color-neutral: #0e1310;
-  --color-neutral-content: #f3eee3;
+  --color-secondary-content: #131815;
+  --color-accent: #f0ae4e;
+  --color-accent-content: #131815;
+  --color-neutral: #0d110f;
+  --color-neutral-content: #e8ebe3;
   --color-info: #8eb8d6;
-  --color-info-content: #141a17;
+  --color-info-content: #131815;
   --color-success: #9cc39a;
-  --color-success-content: #141a17;
-  --color-warning: #e0a965;
-  --color-warning-content: #141a17;
-  --color-error: #e07a6f;
-  --color-error-content: #141a17;
-  --radius-box: 1.25rem;
+  --color-success-content: #131815;
+  --color-warning: #f0ae4e;
+  --color-warning-content: #131815;
+  --color-error: #e58a7f;
+  --color-error-content: #131815;
+  --radius-box: 0.75rem;
   --radius-field: 999px;
   --radius-selector: 999px;
-  --border: 1.5px;
+  --border: 1px;
   --depth: 0;
   --noise: 0;
 }
 
 @theme {
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-sans: 'Karla', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --color-ink: #1d2420;
-  --color-ochre: #9a5b1e;
-  --color-ochre-light: #e0a965;
-  --color-pasture: #3f5a3c;
-  --color-shuka: #b23a2e;
+  --font-display: 'Bricolage Grotesque', 'Geist', system-ui, sans-serif;
+  --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --font-read: 'Newsreader', Georgia, serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* Scene colors (hero/article illustration backgrounds) that follow the
-   active theme, same tokens as the reference's src/input.css. */
+/* Tokens daisyUI does not cover. */
 :root,
 [data-theme='pasture'] {
-  --hill-1: #dce3d2;
-  --hill-2: #c4d1ba;
-  --sun: #e8d6b8;
-  --note: #e3ecdd;
-  --muted: #4e554f;
-  --soft: #5b615b;
+  --card: #f8f9f4;
+  --hairline: #c5c9bc;
+  --field-edge: #8c9285;
+  --muted: #474d46;
+  --soft: #5a6057;
+  --cta-edge: #1e2520;
+  --amber-tint: #f6e4c4;
+  --note: #ddebdd;
+  --hill-1: #d9e0d0;
+  --hill-2: #c2cdb8;
+  --sun: #f2d39b;
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 600ms;
 }
 [data-theme='nightwatch'] {
-  --hill-1: #24302a;
-  --hill-2: #2d3b33;
-  --sun: #d9d2bf;
-  --note: #243328;
-  --muted: #b8beb4;
-  --soft: #a3aa9f;
-}
-
-:root {
-  color-scheme: light dark;
+  --card: #1e2521;
+  --hairline: #333b35;
+  --field-edge: #6e766b;
+  --muted: #b0b7ac;
+  --soft: #9aa196;
+  --cta-edge: #070908;
+  --amber-tint: #3a301f;
+  --note: #203126;
+  --hill-1: #222c25;
+  --hill-2: #2b372f;
+  --sun: #d9c08d;
 }

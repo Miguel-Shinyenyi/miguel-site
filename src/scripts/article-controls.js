@@ -24,7 +24,11 @@ function copy(text) {
 // ---------- code blocks: wrap shiki's output in a header bar + Copy ----------
 document.querySelectorAll('.article-body pre.astro-code').forEach((pre) => {
   const wrapper = document.createElement('div');
-  wrapper.className = 'code-panel sticker';
+  // 'sticker' used to add the old design's hard offset shadow here. In
+  // the 2026-09-29 system .sticker is the 96x72 pillar illustration tile,
+  // and the depth rule allows exactly one hard shadow on the site (the
+  // primary CTA), so the panel is just a bordered container now.
+  wrapper.className = 'code-panel';
   pre.parentNode?.insertBefore(wrapper, pre);
 
   const header = document.createElement('div');
@@ -35,7 +39,7 @@ document.querySelectorAll('.article-body pre.astro-code').forEach((pre) => {
 
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.className = 'btn btn-ghost btn-xs rounded-full border-[#4A5650] font-sans text-[#F3EEE3]';
+  btn.className = 'code-panel-copy';
   btn.textContent = 'Copy';
   btn.addEventListener('click', () => {
     copy(pre.innerText).then(() => {

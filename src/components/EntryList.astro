@@ -1,9 +1,13 @@
 ---
-import EntryMeta from './EntryMeta.astro';
+// Article rows in the 2026-09-29 system: title in Bricolage, meta in Geist
+// Mono, hairline between rows, arrow sliding in on hover. Same row shape as
+// the homepage's Writing tabs, so a section index and the homepage read as
+// one list style.
 import { withBase } from '../lib/url';
 
 interface Entry {
   slug: string;
+  body: string;
   data: {
     title: string;
     date: Date;
@@ -18,17 +22,37 @@ interface Props {
   section: string;
 }
 const { entries, section } = Astro.props;
+
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+const readTimeFor = (body: string) =>
+  Math.max(1, Math.round(body.split(/\s+/).filter(Boolean).length / 215));
 ---
-<ul class="mt-8 flex flex-col gap-8">
-  {entries.map((entry) => (
-    <li class="grid gap-2 border-b border-base-300 pb-8 md:grid-cols-[130px_1fr] md:gap-8">
-      <EntryMeta date={entry.data.date} draft={entry.data.draft} updated={entry.data.updated} />
-      <div>
-        <a href={withBase(`/${section}/${entry.slug}`)} class="row-link font-display text-2xl font-semibold hover:text-primary">
-          {entry.data.title}
-        </a>
-        <p class="mt-2 text-base-content/70">{entry.data.summary}</p>
-      </div>
+<ul class="mt-8 border-b border-hairline">
+  {entries.map((entry, i) => (
+    <li>
+      <a
+        href={withBase(`/${section}/${entry.slug}`)}
+        class="row-link flex items-start justify-between gap-4 border-t border-hairline py-6"
+        data-reveal
+        style={`--i:${Math.min(i, 5)}`}
+      >
+        <span class="flex grow flex-col gap-2">
+          <span class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-6">
+            <span class="grow font-display text-xl font-semibold leading-snug tracking-[-0.015em] md:text-2xl">
+              {entry.data.title}
+            </span>
+            <span class="shrink-0 font-mono text-sm text-soft">
+              {fmt(entry.data.date)} · {readTimeFor(entry.body)} min
+            </span>
+          </span>
+          <span class="text-[15px] leading-relaxed text-muted">{entry.data.summary}</span>
+        </span>
+        <svg class="row-arrow size-5 shrink-0 text-soft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12l14 0" />
+          <path d="M13 18l6 -6" />
+          <path d="M13 6l6 6" />
+        </svg>
+      </a>
     </li>
   ))}
 </ul>

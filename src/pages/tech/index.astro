@@ -3,13 +3,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import EntryList from '../../components/EntryList.astro';
 import { getCollection } from 'astro:content';
 
-const entries = (await getCollection('tech', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const entries = (await getCollection('tech', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
 ---
-<BaseLayout title="Tech — Amwayi" simpleFooter variant="inner">
-  <div class="mx-auto max-w-5xl px-5 py-16 md:px-24 md:py-28">
-    <span class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Writing</span>
-    <h1 class="font-display text-[34px] md:text-[52px]">Tech</h1>
+<BaseLayout title="Tech — Amwayi" description="Articles on backend systems, data and AI.">
+  <section class="mx-auto max-w-[1280px] px-5 py-14 md:px-10 md:py-20">
+    <div class="flex max-w-[60ch] flex-col gap-3" data-reveal>
+      <p class="eyebrow">Writing</p>
+      <h1 class="text-[38px] font-bold leading-[1.05] tracking-[-0.03em] md:text-[56px]">Tech</h1>
+      <p class="text-lg text-muted">Articles on backend systems, data and AI. {entries.length} in total.</p>
+    </div>
     <EntryList entries={entries} section="tech" />
-  </div>
+  </section>
 </BaseLayout>

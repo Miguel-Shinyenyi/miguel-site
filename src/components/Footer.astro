@@ -1,149 +1,112 @@
 ---
-// Matched against the reference implementation's footer
-// (~/Downloads/amwayi-site/index.html and article.html): the full
-// subscribe footer is homepage-only there, inner pages (articles,
-// projects, listings) get a reduced variant, copyright plus one
-// contextual link, no subscribe form. Global (every page gets *a*
-// footer), not just the homepage, since a footer that disappears
-// entirely on every article would be a real regression.
+// Footer ported from the 2026-09-29 reference ("~/Downloads/amwayi-site 2",
+// index.html). It is the one dark block on the site by design, so the
+// simple variant inner pages used to get is gone: every page ends the
+// same way, which is what the reference does.
 //
-// Social links now come from UMWAYI's site/links.md (real accounts, not
-// the reference's own href="#" placeholders), synced to the `links`
-// content collection by scripts/sync-content.mjs.
+// The sign-up is MailerLite's "HTML code" embed in this site's own markup
+// (see docs/design.md). Its class hooks are load-bearing for
+// webforms.min.js; everything visual comes from this design system.
 import { getCollection } from 'astro:content';
-import { withBase, resolveLink } from '../lib/url';
-
-interface Props {
-  simple?: boolean;
-  backHref?: string;
-  backLabel?: string;
-}
-const { simple = false, backHref = withBase('/'), backLabel = 'Back to home' } = Astro.props;
+import { resolveLink } from '../lib/url';
 
 const [linksEntry] = await getCollection('links');
 const socialLinks = linksEntry.data.links;
+const year = new Date().getFullYear();
 ---
-{simple ? (
-  <footer class="bg-neutral text-[#A9B0A7]">
-    <div class="mx-auto flex max-w-[1440px] flex-col-reverse gap-2 px-5 py-8 text-sm md:flex-row md:items-center md:justify-between md:px-24 md:py-10 md:text-[15px]">
-      <span>© 2026 Amwayi</span>
-      <a href={backHref} class="py-3 text-base font-bold text-ochre-light no-underline hover:underline">{backLabel}</a>
-    </div>
-  </footer>
-) : (
-  <footer class="bg-neutral text-neutral-content">
-    <div class="mx-auto flex max-w-[1440px] flex-col gap-10 px-5 pb-8 pt-16 md:gap-12 md:px-24 md:pb-12 md:pt-24">
-      <div class="grid gap-8 md:grid-cols-2 md:items-end md:gap-20">
-        <div class="flex flex-col gap-4 md:gap-5">
-          <h2 class="text-[34px] leading-[1.08] tracking-[-0.02em] md:text-[52px]">Read along as I learn.</h2>
-          <p class="text-[17px] leading-relaxed text-[#C9CEC6] md:text-[19px]">One email when a new article goes out. No noise.</p>
+<footer class="bg-neutral text-neutral-content">
+  <div class="mx-auto flex max-w-[1280px] flex-col gap-12 px-5 pb-8 pt-16 md:px-10 md:pt-20">
+    <div class="grid gap-8 md:grid-cols-2 md:items-end md:gap-16">
+      <div class="flex flex-col gap-3">
+        <h2 class="text-[34px] font-bold leading-[1.05] tracking-[-0.03em] md:text-[44px]">
+          Read along as I learn.
+        </h2>
+        <p class="text-lg text-[#B0B7AC]">One email when a new article goes out.</p>
+      </div>
+
+      <div
+        id="mlb2-46272821"
+        class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-46272821"
+      >
+        <div class="row-form">
+          <form
+            class="ml-block-form flex flex-col gap-2"
+            action="https://assets.mailerlite.com/jsonp/2655737/forms/199417862744441907/subscribe"
+            method="post"
+            data-code=""
+            novalidate
+          >
+            <label for="email" class="text-sm font-semibold text-[#D3D8CD]">Email address</label>
+            <div class="flex flex-col gap-2.5 sm:flex-row">
+              <div class="ml-field-group ml-field-email ml-validate-email ml-validate-required w-full">
+                <input
+                  id="email"
+                  name="fields[email]"
+                  type="email"
+                  required
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                  class="field"
+                  aria-describedby="email-help"
+                />
+              </div>
+              <button type="submit" class="btn-cta shrink-0">Subscribe</button>
+              <button type="button" disabled style="display: none;" class="loading btn-cta shrink-0">
+                Subscribing...
+              </button>
+            </div>
+            <input type="hidden" name="ml-submit" value="1" />
+            <input type="hidden" name="anticsrf" value="true" />
+            <p id="email-help" class="text-sm text-[#B0B7AC]">
+              Double opt-in: confirm from the email to start receiving anything.
+            </p>
+            <p role="alert" class="ml-error-message text-sm font-semibold text-[#F2B3AA]">
+              That email doesn't look right. Check it and try again.
+            </p>
+          </form>
         </div>
-        {/*
-          MailerLite's "HTML code" embed, kept in this site's own markup.
-          Not the Universal script and not the `.ml-embedded` div: both of
-          those render MailerLite's own markup and styles, which would not
-          match this footer. Everything cosmetic from the export is gone
-          (its <style> blocks, the Open Sans @import, the "Newsletter /
-          Signup for news and special offers!" copy, the duplicate
-          horizontal and mobile buttons, target="_blank"); what stays is
-          only what groot.mailerlite.com/js/w/webforms.min.js looks for by
-          name: the container id, ml-subscribe-form-<embed id>, .row-form,
-          .row-success, .ml-block-form, .ml-field-group/.ml-field-email/
-          .ml-validate-*, fields[email], the ml-submit and anticsrf
-          hidden inputs, and button.loading.
-        */}
-        <div
-          id="mlb2-46272821"
-          class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-46272821"
-        >
-          <div class="row-form flex flex-col gap-3">
-            <form
-              class="ml-block-form flex flex-col gap-3"
-              action="https://assets.mailerlite.com/jsonp/2655737/forms/199417862744441907/subscribe"
-              method="post"
-              data-code=""
-              novalidate
+        <p role="status" class="row-success text-sm font-semibold text-[#B9DDB6]">
+          <span class="inline-flex items-center gap-2">
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12l5 5l10 -10" />
+            </svg>
+            Check your email to confirm, then you're on the list.
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-col-reverse gap-4 border-t border-[#2E3630] pt-6 text-sm text-[#9AA196] md:flex-row md:items-center md:justify-between">
+      <span>© {year} Amwayi</span>
+      <nav
+        aria-label="Elsewhere"
+        class="grid grid-cols-3 gap-x-6 gap-y-1 text-[15px] font-semibold text-neutral-content sm:flex"
+      >
+        {socialLinks.map((link) => {
+          const external = !link.url.startsWith('/');
+          return (
+            <a
+              href={resolveLink(link.url)}
+              target={external ? '_blank' : undefined}
+              rel={external ? 'noopener' : undefined}
+              class="py-2.5 hover:text-[#F0AE4E]"
             >
-              <label for="email" class="text-sm font-bold text-[#C9CEC6] md:text-[15px]">Email address</label>
-              <div class="join join-vertical w-full gap-2.5 md:join-horizontal md:gap-0">
-                <div class="ml-field-group ml-field-email ml-validate-email ml-validate-required join-item w-full">
-                  <input
-                    id="email"
-                    name="fields[email]"
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    autocomplete="email"
-                    class="input input-lg w-full rounded-full border-[#F3EEE3] bg-[#F3EEE3] text-ink md:rounded-r-none"
-                  />
-                </div>
-                <button type="submit" class="btn btn-accent btn-lg join-item rounded-full md:rounded-l-none md:px-7">
-                  Subscribe
-                </button>
-                {/* Swapped in by MailerLite's script while the request is in
-                    flight. .loading is its hook, not daisyUI's spinner
-                    component, which global.css neutralizes inside this
-                    container so the button keeps its shape. */}
-                <button
-                  type="button"
-                  disabled
-                  style="display: none;"
-                  class="loading btn btn-accent btn-lg join-item rounded-full md:rounded-l-none md:px-7"
-                >
-                  Subscribing...
-                </button>
-              </div>
-              <input type="hidden" name="ml-submit" value="1" />
-              <input type="hidden" name="anticsrf" value="true" />
-              <div role="alert" class="ml-error-message alert alert-error">
-                That email doesn't look right. Check it and try again.
-              </div>
-            </form>
-          </div>
-          <div class="row-success alert alert-success" role="status">
-            You're on the list. You'll hear when a new article is up.
-          </div>
-        </div>
-      </div>
-      <div class="flex flex-col-reverse gap-4 border-t border-[#3A443E] pt-6 text-sm text-[#A9B0A7] md:flex-row md:items-center md:justify-between md:text-[15px]">
-        <span>© 2026 Amwayi</span>
-        <nav aria-label="Elsewhere" class="grid grid-cols-2 gap-x-7 gap-y-1 text-base font-bold md:flex">
-          {socialLinks.map((link) => {
-            const external = !link.url.startsWith('/');
-            return (
-              <a
-                href={resolveLink(link.url)}
-                target={external ? '_blank' : undefined}
-                rel={external ? 'noopener' : undefined}
-                class="py-3 text-ochre-light no-underline hover:underline"
-              >
-                {link.label}
-              </a>
-            );
-          })}
-        </nav>
-      </div>
+              {link.label}
+            </a>
+          );
+        })}
+      </nav>
     </div>
-    {/*
-      All three of these are is:inline on purpose. The success callback has
-      to be a real global for MailerLite's script to find it by name, which
-      an Astro-processed module script would not be, and the other two are
-      external/third-party so there is nothing to bundle. They sit inside
-      this branch so nothing MailerLite-related loads on article pages,
-      which have the simple footer and no form.
-    */}
-    <script is:inline>
-      function ml_webform_success_46272821() {
-        var container = document.getElementById('mlb2-46272821');
-        if (container) container.classList.add('ml-submitted');
-      }
-    </script>
-    <script is:inline>
-      fetch('https://assets.mailerlite.com/jsonp/2655737/forms/199417862744441907/takel');
-    </script>
-    <script
-      is:inline
-      src="https://groot.mailerlite.com/js/w/webforms.min.js?v83147fa8ce2d95cb73ece7f28b469519"
-    ></script>
-  </footer>
-)}
+  </div>
+
+  <script is:inline>
+    function ml_webform_success_46272821() {
+      var container = document.getElementById('mlb2-46272821');
+      if (container) container.classList.add('ml-submitted');
+    }
+  </script>
+  <script is:inline>
+    fetch('https://assets.mailerlite.com/jsonp/2655737/forms/199417862744441907/takel');
+  </script>
+  <script is:inline src="https://groot.mailerlite.com/js/w/webforms.min.js?v83147fa8ce2d95cb73ece7f28b469519"></script>
+</footer>

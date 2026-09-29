@@ -1,6 +1,8 @@
 ---
-// docs/redesign-spec-2026-09-23.md section 4.6.
-import { withBase } from '../lib/url';
+// Bento tile, ported from the 2026-09-29 reference's projects section.
+// Flat: hairline border, no shadow, 2px lift on hover. `tint` gives one
+// tile per section the amber-tint fill the design system allows.
+import { resolveLink } from '../lib/url';
 
 interface Props {
   title: string;
@@ -11,25 +13,52 @@ interface Props {
   stack: string[];
   link: string;
   linkLabel: string;
+  tint?: boolean;
+  class?: string;
 }
-const { title, summary, status, statusVariant, category, stack, link, linkLabel } = Astro.props;
-const href = link.startsWith('http') ? link : withBase(link);
+const {
+  title,
+  summary,
+  status,
+  statusVariant,
+  category,
+  stack,
+  link,
+  linkLabel,
+  tint = false,
+  class: className = '',
+} = Astro.props;
+
+const external = !link.startsWith('/');
 ---
-<article class="card bg-base-100 rounded-box">
-  <div class="card-body gap-4">
-    <div class="flex items-center justify-between gap-2">
-      <span class:list={['badge badge-outline', statusVariant === 'success' ? 'badge-success' : 'badge-primary']}>
-        {status}
-      </span>
-      <span class="text-sm opacity-70">{category}</span>
-    </div>
-    <h3 class="card-title font-display text-3xl">{title}</h3>
-    <p>{summary}</p>
-    <div class="flex flex-wrap gap-2">
-      {stack.map((tech) => <span class="badge border-0 bg-base-300">{tech}</span>)}
-    </div>
-    <div class="card-actions mt-auto">
-      <a class="link link-primary font-bold" href={href}>{linkLabel}</a>
-    </div>
+<a
+  href={resolveLink(link)}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener' : undefined}
+  class:list={['tile group gap-3 p-6 md:p-7', tint ? 'bg-[var(--amber-tint)]' : 'bg-card', className]}
+>
+  <div class="flex items-center justify-between gap-2">
+    <span
+      class:list={[
+        'chip font-semibold',
+        statusVariant === 'success' ? 'border-success text-success' : 'border-[var(--field-edge)]',
+      ]}
+    >
+      {status}
+    </span>
+    <span class="text-sm text-soft">{category}</span>
   </div>
-</article>
+  <h3 class="text-2xl font-bold tracking-[-0.02em]">{title}</h3>
+  <p class="text-[15px] leading-relaxed text-muted">{summary}</p>
+  <p class="mt-auto text-sm text-soft">{stack.join(', ')}</p>
+  <span class="link-amber inline-flex items-center gap-1.5 self-start">
+    {linkLabel}
+    <span class="transition-transform duration-150 group-hover:translate-x-1">
+      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12l14 0" />
+        <path d="M13 18l6 -6" />
+        <path d="M13 6l6 6" />
+      </svg>
+    </span>
+  </span>
+</a>
