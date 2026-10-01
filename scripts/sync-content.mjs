@@ -151,6 +151,12 @@ emptyDir(imagesDest);
 const imageCount = copyFilesInto(join(sitePath, 'images'), imagesDest);
 log(`images/ -> public/images/ (${imageCount} file${imageCount === 1 ? '' : 's'})`);
 
+// files/* (downloadable assets, e.g. the CV)
+const filesDest = join(ROOT, 'public', 'files');
+emptyDir(filesDest);
+const fileCount = copyFilesInto(join(sitePath, 'files'), filesDest);
+log(`files/ -> public/files/ (${fileCount} file${fileCount === 1 ? '' : 's'})`);
+
 // UMWAYI's own root projects/*.md (career-prep.md, cmu-masters.md,
 // routine-machine.md, ...), the source for the homepage's open-threads
 // feature (src/lib/openThreads.ts), which reads from .umwayi/projects/ at
