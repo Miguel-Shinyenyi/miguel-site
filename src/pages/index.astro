@@ -30,7 +30,7 @@ const otherProjects = projectEntries.filter((entry) => entry !== featured);
 
 const [nowEntry] = await getCollection('now');
 const [linksEntry] = await getCollection('links');
-const hashnodeUrl = linksEntry.data.links.find((l) => l.label === 'Hashnode')?.url ?? '#';
+const devtoUrl = linksEntry.data.links.find((l) => l.label === 'dev.to')?.url ?? '#';
 
 const threads = await getOpenThreads();
 
@@ -300,12 +300,12 @@ const writingTabs = [
         </h2>
       </div>
       <a
-        href={resolveLink(hashnodeUrl)}
+        href={resolveLink(devtoUrl)}
         target="_blank"
         rel="noopener"
         class="link-amber inline-flex items-center gap-1.5 self-start py-2 text-[15px] md:self-auto"
       >
-        All articles on Hashnode
+        All articles on dev.to
         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M17 7l-10 10" />
           <path d="M8 7l9 0l0 9" />
