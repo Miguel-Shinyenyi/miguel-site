@@ -746,3 +746,22 @@
   stroke: #8c9285;
   stroke-width: 1.5;
 }
+
+/* Selected tab label disappearing on hover. daisyUI ships
+   `.tab:is(.tabs>.tab){ &:hover{ color: var(--color-base-content) } }` inside
+   @layer utilities (node_modules/daisyui/components/tab.css), and Tailwind 4's
+   layer order puts utilities above components, so it beats this file's own
+   `.tabs .tab.pill-tab:checked { color: var(--color-base-100) }` no matter how
+   specific that selector is. On the dark checked pill that resolves the label
+   to the same ink as its background: measured rgb(237,239,232) at rest turning
+   into rgb(30,37,32) on hover, against an rgb(30,37,32) fill.
+
+   Unlayered on purpose. An unlayered rule outranks every layered one whatever
+   layer it sits in, which is the only way to win this without patching
+   daisyUI. Scoped to the selected states so the unselected tabs keep daisyUI's
+   own hover (dimmed ink brightening to full ink). */
+.pill-tab:checked:hover,
+.pill-tab[aria-selected='true']:hover,
+.pill-tab:has(input:checked):hover {
+  color: var(--color-base-100);
+}
