@@ -72,6 +72,10 @@ throwaway build, and reverting it immediately. That build produced real POSTs to
 is **not** in the shipped code: `grep -c opt_out_useragent_filter src/scripts/analytics.ts`
 returns 0.
 
+The three link events were verified the same way, each with its real properties:
+`cv_download` on the footer Résumé link, `rss_click` on the footer RSS link, and
+`outbound_click` on the footer GitHub link.
+
 Two consequences worth keeping in mind:
 
 1. Automated traffic will never appear in PostHog, which is usually what you want.
@@ -124,13 +128,12 @@ data attributes.
 Three of the required items cannot work as asked today. None is a reason to stop, but none
 should be written as working either.
 
-1. **`rss_click` has nothing to click.** The feed exists at `/rss.xml` and is linked from
-   `<head>` as `<link rel="alternate">`, but no page renders a clickable RSS link. Checked
-   the built HTML: zero `<a>` elements point at `rss.xml`. The event stays in the table and
-   stays dead until a visible link is added. Adding one is a design change, so it is a
-   question for Miguel, not something to slip in.
-2. **`cv_download` has no CV.** Nothing in the site references a CV, resume or curriculum
-   vitae. The event cannot fire until a CV exists and is linked.
+1. ~~**`rss_click` has nothing to click.**~~ Closed on 2026-10-15. A visible RSS link was
+   added to the footer link nav. Verified firing with `source: /miguel-site/`.
+2. ~~**`cv_download` has no CV.**~~ Closed on 2026-10-15. The CV lives in UMWAYI at
+   `site/files/Miguel_Shinyenyi_CV.pdf`, the sync copies `site/files/*` into
+   `public/files/`, and `links.md` renders it in the footer as "Résumé (PDF)". Verified
+   firing with `file: /miguel-site/files/Miguel_Shinyenyi_CV.pdf`.
 3. **Active seconds is approximate.** `article_read_complete` carries `active_seconds`
    measured with page visibility and an idle timer in this site's own code. It is not a
    PostHog built-in, so it counts time the tab was visible, not time the visitor was
@@ -221,14 +224,9 @@ Both signals are treated as Decline.
    need.
 2. **No privacy page.** Declined for now. Nothing on the site tells a visitor any of this is
    happening.
-3. **`cv_download` has nothing to fire on.** No CV exists on the site. The handler is wired
-   and waits for one.
-4. **The 375px overflow on article and project pages.** Pre-existing, not from this work,
+3. **The 375px overflow on article and project pages.** Pre-existing, not from this work,
    and unexplained. Worth its own pass.
-5. **Repository secrets.** CI needs `PUBLIC_POSTHOG_KEY` and `PUBLIC_POSTHOG_HOST` adding
-   before a deploy will send anything. Until then the production build has no key and does
-   nothing, which is the same safe state as B2.
-6. **Naming the vendor.** Nothing visitor-facing names it, because nothing visitor-facing
+4. **Naming the vendor.** Nothing visitor-facing names it, because nothing visitor-facing
    exists yet. The question returns with the banner.
 
 ## Doc pages used
