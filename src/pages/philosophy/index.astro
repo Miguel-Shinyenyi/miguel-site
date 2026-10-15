@@ -7,7 +7,7 @@ const entries = (await getCollection('philosophy', ({ data }) => !data.draft)).s
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
 ---
-<BaseLayout title="Philosophy — Amwayi" description="Articles on how to think and live.">
+<BaseLayout title="Philosophy · Amwayi" description="Articles on how to think and live.">
   <section class="mx-auto max-w-[1280px] px-5 py-14 md:px-10 md:py-20">
     <div class="flex max-w-[60ch] flex-col gap-3" data-reveal>
       <p class="eyebrow">Writing</p>

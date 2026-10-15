@@ -27,9 +27,15 @@ jobs:
         run: node scripts/sync-content.mjs
         env:
           PRIVATE_NAMES: ${{ secrets.PRIVATE_NAMES }}
+      # PUBLIC_POSTHOG_* are read by src/scripts/analytics.ts at build time
+      # and inlined into the client bundle. The project key is public by
+      # design (write only, ships in client JS), but it still lives in
+      # repository secrets rather than in this file.
       - uses: withastro/action@v3
         env:
           PRIVATE_NAMES: ${{ secrets.PRIVATE_NAMES }}
+          PUBLIC_POSTHOG_KEY: ${{ secrets.PUBLIC_POSTHOG_KEY }}
+          PUBLIC_POSTHOG_HOST: ${{ secrets.PUBLIC_POSTHOG_HOST }}
   deploy:
     needs: build
     runs-on: ubuntu-latest

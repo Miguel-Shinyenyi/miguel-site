@@ -14,3 +14,9 @@ src/content/links/*.md
 public/illustrations/
 public/images/
 public/files/
+
+# Analytics keys. The PostHog project key ships in client JS by design,
+# but it still never gets committed. CI reads it from repository secrets.
+.env
+.env.*
+!.env.example
