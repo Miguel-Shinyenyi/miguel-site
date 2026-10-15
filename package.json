@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
-    "astro": "^4.15.0"
+    "astro": "^4.15.0",
+    "posthog-js": "1.438.11"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

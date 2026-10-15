@@ -30,7 +30,8 @@ const toc = headings.filter((h) => h.depth === 2);
 const fmtShort = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
 
 // Computed from real word count, not authored front matter, ~215 wpm.
-const readTime = Math.max(1, Math.round(entry.body.split(/\s+/).filter(Boolean).length / 215));
+const wordCount = entry.body.split(/\s+/).filter(Boolean).length;
+const readTime = Math.max(1, Math.round(wordCount / 215));
 
 // Keep reading: two most recent other articles across the three sections.
 const others = isProject
@@ -55,7 +56,7 @@ const sectionLabels: Record<string, string> = {
 };
 ---
 <BaseLayout
-  title={`${entry.data.title} — Amwayi`}
+  title={`${entry.data.title} · Amwayi`}
   description={entry.data.summary}
   readProgress
 >
@@ -210,7 +211,14 @@ const sectionLabels: Record<string, string> = {
       </div>
     </aside>
 
-    <article class="prose-amwayi flex min-w-0 flex-col gap-6">
+    <article
+      class="prose-amwayi flex min-w-0 flex-col gap-6"
+      data-article
+      data-collection={section}
+      data-slug={entry.slug}
+      data-tags={(entry.data.tags ?? []).join(',')}
+      data-word-count={wordCount}
+    >
       <div class="article-body"><Content /></div>
 
       {project && project.links && project.links.length > 0 && (

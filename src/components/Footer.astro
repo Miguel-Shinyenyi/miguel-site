@@ -8,7 +8,7 @@
 // (see docs/design.md). Its class hooks are load-bearing for
 // webforms.min.js; everything visual comes from this design system.
 import { getCollection } from 'astro:content';
-import { resolveLink } from '../lib/url';
+import { resolveLink, withBase } from '../lib/url';
 
 const [linksEntry] = await getCollection('links');
 const socialLinks = linksEntry.data.links;
@@ -95,6 +95,7 @@ const year = new Date().getFullYear();
             </a>
           );
         })}
+        <a href={withBase('/rss.xml')} class="py-2.5 hover:text-[#F0AE4E]">RSS</a>
       </nav>
     </div>
   </div>

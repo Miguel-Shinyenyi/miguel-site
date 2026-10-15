@@ -17,6 +17,7 @@ The code that renders the site (Astro, Tailwind v4, daisyUI). It holds no conten
 | Comments, "This helped", Waline, Giscus | `docs/feedback.md` |
 | Build, deploy, Pages, the content sync | `docs/publishing.md` |
 | A redesign step | `docs/redesign-spec-2026-09-23.md` |
+| Analytics, consent, the privacy page | `docs/analytics.md` |
 
 ## Rules that already apply
 
