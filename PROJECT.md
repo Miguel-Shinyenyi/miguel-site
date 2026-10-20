@@ -64,7 +64,7 @@ site/
     layouts/
       BaseLayout.astro
     pages/
-      index.astro, rss.xml.js
+      index.astro, rss.xml.js, rss.astro (the plain /rss/ page the footer links to)
       [section]/index.astro and [section]/[slug].astro for each of the four sections
     scripts/
       analytics.ts <- PostHog init and the custom events
@@ -150,6 +150,7 @@ Current phase: **none. The open work is listed under "Known gaps" below.**
 | 2026-09-23 | Privacy | Done | `PRIVATE_NAMES` build guard added to `scripts/sync-content.mjs`: it fails the build if published content names a company Miguel applied to or interviewed with, reporting file and line but never the matched text. The names live only in a repository secret. |
 | 2026-09-29 | Phase 7 | Done | Second design replacement, the system in `~/Downloads/amwayi-site 2/docs/DESIGN.md`: cool pasture canvas with one amber accent, Bricolage Grotesque and Geist, Newsreader back for article body, flat surfaces instead of sticker shadows, a bento projects grid, and a documented motion system. Preflight turned back on, retiring the bug class above. |
 | 2026-10-15 | Phase 9 | Done | PostHog added on branch `feat/posthog`: pageviews, autocapture, heatmaps, web vitals, exceptions, session replay and eight custom events. No consent banner and no privacy page, by Miguel's decision, recorded in docs/analytics.md. |
+| 2026-10-19 | Distribution | Done | The footer "RSS" link opened `rss.xml`, which browsers show as raw code. It now goes to a plain page, `/rss/`, that explains email and feed readers, gives the feed address with a copy button and lists the latest articles. `rss.xml` stays where it was for feed readers and `<link rel="alternate">`, and now carries a CSS stylesheet (`public/rss-style.css`) so a direct visit shows readable text with a pointer to `/rss/`. Not XSLT: Chrome stops supporting XSLT on stable from Chrome 158 (2026-11-17). `rss_click` also fires for the `/rss/` link. Verified in Chromium: footer click lands on `/rss/`, the feed renders styled, no horizontal scroll at 375px. |
 
 ## Known gaps
 
