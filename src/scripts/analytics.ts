@@ -113,7 +113,7 @@ function wireCustomEvents(posthog: typeof import('posthog-js').default) {
 
       // Same host. RSS and CV are tracked separately so they do not get
       // lost inside autocapture.
-      if (url.pathname.endsWith('/rss.xml')) {
+      if (url.pathname.endsWith('/rss.xml') || url.pathname.endsWith('/rss/')) {
         posthog.capture('rss_click', { source: location.pathname });
       } else if (/\.(pdf|docx?)$/i.test(url.pathname) && /cv|resume/i.test(url.pathname)) {
         posthog.capture('cv_download', { file: url.pathname });

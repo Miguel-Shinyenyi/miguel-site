@@ -45,5 +45,7 @@ export async function GET(context) {
     description: 'Articles on philosophy, technology and journaling, by Miguel (Amwayi).',
     site: context.site,
     items,
+    // CSS, not XSLT: Chrome drops XSLT from stable on 2026-11-17 (Chrome 158).
+    stylesheet: withBase('/rss-style.css'),
   });
 }

@@ -1,0 +1,88 @@
+---
+// /rss/: a plain page for people who click "RSS" in the footer. The feed
+// itself stays at /rss.xml for feed readers and for the <link rel="alternate">
+// in BaseLayout. Before this page existed the footer linked straight to
+// rss.xml, which most browsers show as raw code. Chrome is also removing XSLT
+// (stable from Chrome 158, 17 November 2026), so styling the XML into a page
+// is not a lasting fix; a real page is.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { withBase } from '../lib/url';
+
+const SECTIONS = ['philosophy', 'tech', 'journal'];
+const bySection = await Promise.all(
+  SECTIONS.map(async (section) => {
+    const entries = await getCollection(section, ({ data }) => !data.draft);
+    return entries.map((entry) => ({ entry, section }));
+  }),
+);
+const latest = bySection
+  .flat()
+  .sort((a, b) => b.entry.data.date.valueOf() - a.entry.data.date.valueOf())
+  .slice(0, 8);
+
+const feedUrl = new URL(withBase('/rss.xml'), Astro.site).href;
+const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<BaseLayout title="Follow new articles · Amwayi" description="Get new articles by email or in a feed reader app.">
+  <section class="mx-auto max-w-[1280px] px-5 py-14 md:px-10 md:py-20">
+    <div class="flex max-w-[60ch] flex-col gap-3" data-reveal>
+      <p class="eyebrow">Follow</p>
+      <h1 class="text-[38px] font-bold leading-[1.05] tracking-[-0.03em] md:text-[56px]">Follow new articles</h1>
+      <p class="text-lg text-muted">There are two ways to hear when a new article goes up.</p>
+    </div>
+
+    <div class="mt-10 grid max-w-[60ch] gap-10">
+      <div class="flex flex-col gap-3">
+        <h2 class="text-2xl font-bold tracking-[-0.02em]">By email</h2>
+        <p>Sign up at the bottom of this page. You get an email when a new article goes up, and you can leave at any time.</p>
+        <p><a class="font-semibold underline underline-offset-4" href="#mlb2-46272821">Go to the sign-up form</a></p>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <h2 class="text-2xl font-bold tracking-[-0.02em]">In a feed reader</h2>
+        <p>
+          A feed reader is an app that collects new posts from the sites you follow, in one list.
+          Feedly, Inoreader and NetNewsWire are three examples. Copy this address and paste it into the
+          app's "add feed" or "follow" box.
+        </p>
+        <div class="flex flex-wrap items-center gap-3">
+          <code class="break-all rounded-md border border-current/20 px-3 py-2 text-sm" data-feed-url>{feedUrl}</code>
+          <button type="button" class="rounded-md border border-current/40 px-3 py-2 text-sm font-semibold" data-copy-feed>
+            Copy address
+          </button>
+        </div>
+        <p class="text-sm text-muted">If you open that address in a browser, you see code. That is normal: it is meant for the app, not for reading.</p>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <h2 class="text-2xl font-bold tracking-[-0.02em]">Latest articles</h2>
+        <ul class="flex flex-col gap-2">
+          {latest.map(({ entry, section }) => (
+            <li>
+              <a class="font-semibold underline underline-offset-4" href={withBase(`/${section}/${entry.slug}/`)}>{entry.data.title}</a>
+              <span class="text-sm text-muted"> · {fmt.format(entry.data.date)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+    document.querySelectorAll('[data-copy-feed]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var url = document.querySelector('[data-feed-url]').textContent.trim();
+        function done() {
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.textContent = 'Copy address'; }, 2000);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done, function () { btn.textContent = 'Select the address above to copy it'; });
+        } else {
+          btn.textContent = 'Select the address above to copy it';
+        }
+      });
+    });
+  </script>
+</BaseLayout>
