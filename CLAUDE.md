@@ -34,3 +34,15 @@ The code that renders the site (Astro, Tailwind v4, daisyUI). It holds no conten
 2. Look at the page at 375px and 1280px in a real browser. Do not judge it from the CSS.
 3. `npm run check:mobile` passes.
 4. State which of these you ran.
+
+## Understanding first, and the 111 concerns
+
+These rules come from the UMWAYI hub (`docs/understanding-first.md` and `docs/engineering-concerns.md`). They apply to every task here.
+
+- The cycle of every step: understand things as they are, not as you want them to be. Then let AI write what you understood is needed. Check the output against the goal. Weigh the consequences and know how to undo the change before you ship it.
+- State the goal in one sentence before any work, in the other person's words. After the work, check the output against that sentence.
+- Stay close behind AI output. Do not accept code you cannot explain. Review each change before the next one starts.
+- Solve the problem as stated. Do not draft, follow up or audit before you are asked.
+- Name the failure mode when you notice it: Forming, Dislodging, Assumption, Location, Achievement, Progression, Interruption, Mislead. Apply its remedy.
+- When there is so much to do that nothing moves, pick the smallest next piece and finish it.
+- Keep a concerns record in the design doc: one row per concept (1 to 111), answered applies, not applicable or deferred, with a reason and evidence. Add it when asked for an audit, and at the start of any new project.
