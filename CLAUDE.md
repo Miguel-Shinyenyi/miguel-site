@@ -46,3 +46,10 @@ These rules come from the UMWAYI hub (`docs/understanding-first.md` and `docs/en
 - Name the failure mode when you notice it: Forming, Dislodging, Assumption, Location, Achievement, Progression, Interruption, Mislead. Apply its remedy.
 - When there is so much to do that nothing moves, pick the smallest next piece and finish it.
 - Keep a concerns record in the design doc: one row per concept (1 to 111), answered applies, not applicable or deferred, with a reason and evidence. Add it when asked for an audit, and at the start of any new project.
+
+## Working rules (added 2026-11-02)
+
+- Never commit to `main`. Work on a feature branch, open a pull request, and merge only after checks pass.
+- One purpose per commit. The message says what changed and why. The pull request description says what problem it solves, who it is for, and how you checked it.
+- Before writing code, check whether this repository or the others already have code you can reuse.
+- The standing rules for agents are in the UMWAYI hub: `docs/agent-principles.md`.
