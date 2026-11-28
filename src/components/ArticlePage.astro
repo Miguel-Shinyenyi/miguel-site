@@ -11,6 +11,7 @@ import Waline from './Waline.astro';
 import ProfilePhoto from './ProfilePhoto.astro';
 import { withBase, resolveLink } from '../lib/url';
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { existsSync } from 'node:fs';
 
 type Section = 'philosophy' | 'tech' | 'journal';
 type PageKind = Section | 'projects';
@@ -23,6 +24,10 @@ interface Props {
 const { entry, section, sectionLabel } = Astro.props;
 const isProject = section === 'projects';
 const project = isProject ? (entry as CollectionEntry<'projects'>).data : null;
+
+// A 1200x630 PNG at public/og/<slug>.png becomes the link preview image.
+const ogFile = `og/${entry.slug}.png`;
+const ogImage = existsSync(`public/${ogFile}`) ? withBase(`/${ogFile}`) : undefined;
 
 const { Content, headings } = await entry.render();
 const toc = headings.filter((h) => h.depth === 2);
@@ -58,6 +63,7 @@ const sectionLabels: Record<string, string> = {
 <BaseLayout
   title={`${entry.data.title} · Amwayi`}
   description={entry.data.summary}
+  image={ogImage}
   readProgress
 >
   <!-- ============ TITLE ============ -->
